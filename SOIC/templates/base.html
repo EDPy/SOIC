@@ -1,0 +1,92 @@
+{% load staticfiles %}
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>PG SOIC</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+  </head>
+
+  <body>
+
+    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+      <a class="my-0 mr-md-auto font-weight-normal" href="{% url 'home' %}">
+        <h5 class="my-0 mr-md-auto font-weight-normal">Siemens AG</h5>
+      </a>
+      <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="{% url 'upPosd' %}">Upload</a>
+        <a class="p-2 text-dark" href="{% url 'upT3000' %}">Projects</a>
+        <a class="p-2 text-dark" href="{% url 'projectStat' %}">Statistics</a>
+        <a class="p-2 text-dark" href="#">Compare</a>
+      </nav>
+      <a class="btn btn-outline-primary" href="#">Login</a>
+    </div>
+
+    {% block content %}
+
+    {% endblock %}
+
+      <footer class="container pt-4 my-md-3 pt-md-3 text-center border-top">
+        <div class="row">
+          <div class="col-12 col-md">
+            <small class="d-block mb-3 text-muted">&copy; 2017-2018</small>
+          </div>
+          <div class="col-6 col-md">
+            <h5>Links</h5>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="#">Guidelines</a></li>
+              <li><a class="text-muted" href="#">Proposal</a></li>
+              <li><a class="text-muted" href="#">SSN</a></li>
+              <li><a class="text-muted" href="#">PMTX</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md">
+            <h5>Software</h5>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="#">Documentation</a></li>
+              <li><a class="text-muted" href="#">Contact</a></li>
+            </ul>
+          </div>
+          <div class="col-6 col-md">
+            <h5>About</h5>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="#">Team</a></li>
+              <li><a class="text-muted" href="#">Locations</a></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+
+
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+
+
+
+    <script>
+      Holder.addTheme('thumb', {
+        bg: '#55595c',
+        fg: '#eceeef',
+        text: 'Thumbnail'
+      });
+    </script>
+  </body>
+</html>
+
+

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+
+            {% if error %}
+    <div class="container card box-shadow">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Messagebox</h4>
+      </div>
+      <div class="card-body">
+        <ul class="list-unstyled mt-3 mb-4 text-danger font-size:24px">
+
+            <li>{{ error }}</li>
+
+        </ul>
+      </div>
+    </div>
+            {% endif %}
+
+    <br/>
+
+    <div class="container box-shadow">
+        <br/>
+        <div class="card-header">
+            <h4 class="my-0 font-weight-normal">Upload</h4>
+        </div>
+        <br/>
+        <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="myfile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                <br/><br/>
+                <button class="btn btn-primary" type="submit">Upload</button>
+        </form>
+    </div>
+
+    <div class="container">
+            {% if uploaded_file_url %}
+            <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
+            {% endif %}
+    </div>
+    <br/>
+    <div class="container">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                <tr>
+                    <th>HG</th>
+                    <th>POS</th>
+                    <th>DESCRIPTION</th>
+                    <th>HOURS</th>
+                    <th>COST</th>
+                </tr>
+                </thead>
+                {% for item in posd_objects.all %}
+                    <tr>
+                        <td>{{item.hg}}</td>
+                        <td>{{item.pos}}</td>
+                        <td>{{item.description}}</td>
+                        <td>{{item.hours}}</td>
+                        <td>{{item.cost}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+    </div>
+
+{% endblock %}
