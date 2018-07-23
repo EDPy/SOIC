@@ -1,7 +1,6 @@
 from django.db import models
 
 class Posd(models.Model):
-    # TODO ALSO excel sheet source shall be stored in database as proof or in case of doubt of the value to validate it.
     #This class is just repsresenting the cost position in KBSUMME
     hg = models.IntegerField()
     pos = models.IntegerField()
@@ -25,15 +24,16 @@ class KbMeta(models.Model):
     projname = models.CharField(max_length=100, blank=True)
     customer = models.CharField(max_length=100, blank=True)
     endcustomer = models.CharField(max_length=100, blank=True)
+    phase = models.CharField(max_length=50, blank=True) # Budget / Firm-Bid
 
 class T3000db(models.Model):
-    #TODO ALSO excel sheet source shall be stored in database as proof or in case of doubt of the value to validate it.
     #This is the T3000 detail cost calculation
-    pid = models.IntegerField()
+    #pid = models.IntegerField()
     hg = models.IntegerField()
     pos = models.IntegerField()
     hours = models.FloatField()
     cost = models.FloatField()
+    kbmeta = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = (('pid', 'hg', 'pos'),)
+    #class Meta:
+        #unique_together = (('pid', 'hg', 'pos'),)

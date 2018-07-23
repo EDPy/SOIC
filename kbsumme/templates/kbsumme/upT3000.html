@@ -6,7 +6,7 @@
     </div>
 
             {% if error %}
-    <div class="container card box-shadow">
+    <div class="container card box-shadow pl-0 pr-0">
       <div class="card-header">
         <h4 class="my-0 font-weight-normal">Messagebox</h4>
       </div>
@@ -48,20 +48,21 @@
                 <thead class="thead-light">
                 <tr align="left">
                     <th>PID</th>
+                    <th>Project</th>
                     <th>HG</th>
                     <th>POS</th>
-                    <th>DESCRIPTION</th>
+                    <!--<th>DESCRIPTION</th>-->
                     <th>HOURS</th>
                     <th>COST</th>
                 </tr>
                 </thead>
                 {% for item in t3000_objects.all %}
                     <tr align="left">
-                        <td>{{item.pid}}</td>
+                        <td>{{item.kbmeta.pid}}</td>
+                        <td>{{item.kbmeta.projname}}</td>
                         <td>{{item.hg}}</td>
                         <td>{{item.pos}}</td>
-                        <td></td>
-                        <!--<td>{{item.description}}</td> -->
+                        <!--<td>{{item.description}}</td>-->
                         <td>{{item.hours}}</td>
                         <td>{{item.cost}}</td>
                     </tr>

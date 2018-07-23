@@ -126,17 +126,6 @@ def upT3000Func(request, file):
         return render(request, 'kbsumme/upT3000.html', {
             'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
 
-    for item in posd_objects.all():
-        t3000_inst.hg = item.hg
-        t3000_inst.pos = item.pos
-        if item.hours:
-            t3000_inst.hours = float(ws[item.hours].value)
-        if item.cost:
-            t3000_inst.cost = float(ws[item.cost].value)
-        t3000_inst.pid = ws['G2'].value #PID is the quotation number from KLA sheet.
-        t3000_inst.pk = None
-        t3000_inst.save()
-
     #Fill in the META data to kbmeta database
     #PID, quotno, dateupload, filename cant be empty NULL or not allwed to be emtpy:
     kbmeta_inst.pid = ws['G2'].value
@@ -163,11 +152,26 @@ def upT3000Func(request, file):
         kbmeta_inst.datecalc = ws['S4'].value
 
     kbmeta_inst.save()
+
+    # Fill in the hours and cost from excel KBSUMME.
+    for item in posd_objects.all():
+        t3000_inst.hg = item.hg
+        t3000_inst.pos = item.pos
+        if item.hours:
+            t3000_inst.hours = float(ws[item.hours].value)
+        if item.cost:
+            t3000_inst.cost = float(ws[item.cost].value)
+        #t3000_inst.pid = ws['G2'].value #PID is the quotation number from KLA sheet.
+        t3000_inst.kbmeta = kbmeta_inst
+        t3000_inst.pk = None
+        t3000_inst.save()
+        t3000_inst.posd.add(posd_inst)
+
     createDetailProjectGraphic(ws['G2'].value)
 
 def projectStat(request, pid=205819):
     obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
-    createDetailProjectGraphic(pid)
+    #createDetailProjectGraphic(pid)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
 def createProjectGraphic(pid):
