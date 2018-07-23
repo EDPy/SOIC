@@ -49,26 +49,22 @@
                 <tr align="left">
                     <th>PID</th>
                     <th>Project</th>
-                    <th>HG</th>
-                    <th>POS</th>
-                    <!--<th>DESCRIPTION</th>-->
+                    <th>Descr.</th>
                     <th>HOURS</th>
                     <th>COST</th>
                 </tr>
                 </thead>
                 {% for item in t3000_objects.all %}
                     <tr align="left">
-                        <td>{{item.kbmeta.pid}}</td>
-                        <td>{{item.kbmeta.projname}}</td>
-                        <td>{{item.hg}}</td>
-                        <td>{{item.pos}}</td>
-                        <!--<td>{{item.description}}</td>-->
+                        <td>{{item.pid.pid}}</td>
+                        <td>{{item.pid.projname}}</td>
+                        <td>{{item.hgpos.description}}</td>
                         <td>{{item.hours}}</td>
                         <td>{{item.cost}}</td>
                     </tr>
                 {% endfor %}
             </table>
-        </div>
+    </div>
 
 
 {% endblock %}

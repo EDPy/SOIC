@@ -42,8 +42,7 @@
             <table class="table table-bordered table-hover">
                 <thead class="thead-light">
                 <tr>
-                    <th>HG</th>
-                    <th>POS</th>
+                    <th>HGPOS</th>
                     <th>DESCRIPTION</th>
                     <th>HOURS</th>
                     <th>COST</th>
@@ -51,8 +50,7 @@
                 </thead>
                 {% for item in posd_objects.all %}
                     <tr>
-                        <td>{{item.hg}}</td>
-                        <td>{{item.pos}}</td>
+                        <td>{{item.hgpos}}</td>
                         <td>{{item.description}}</td>
                         <td>{{item.hours}}</td>
                         <td>{{item.cost}}</td>

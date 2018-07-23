@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="62b3f62b-93cf-4481-8f26-d75f9250baf2" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SOIC/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SOIC/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/SOIC/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kbsumme/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kbsumme/migrations/0002_kbmeta_dateupload.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kbsumme/migrations/0003_auto_20180719_0445.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kbsumme/migrations/0004_auto_20180722_1231.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/kbsumme/migrations/0005_t3000db_posd.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/kbsumme/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/kbsumme/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kbsumme/templates/kbsumme/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/kbsumme/templates/kbsumme/home.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html" beforeDir="false" afterPath="$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kbsumme/templates/kbsumme/upT3000.html" beforeDir="false" afterPath="$PROJECT_DIR$/kbsumme/templates/kbsumme/upT3000.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kbsumme/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kbsumme/views.py" afterDir="false" />
@@ -24,8 +25,8 @@
       <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/kbsumme/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-70">
-              <caret line="158" column="33" lean-forward="true" selection-start-line="158" selection-start-column="33" selection-end-line="158" selection-end-column="33" />
+            <state relative-caret-position="3686">
+              <caret line="275" column="17" selection-start-line="275" selection-start-column="17" selection-end-line="275" selection-end-column="17" />
               <folding>
                 <element signature="e#0#64#0" expanded="true" />
               </folding>
@@ -36,8 +37,8 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/kbsumme/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="665">
-              <caret line="35" column="64" selection-start-line="35" selection-start-column="64" selection-end-line="35" selection-end-column="64" />
+            <state relative-caret-position="589">
+              <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
             </state>
           </provider>
         </entry>
@@ -81,8 +82,8 @@
       <file leaf-file-name="upPosd.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="76">
-              <caret line="4" column="51" selection-start-line="4" selection-start-column="51" selection-end-line="4" selection-end-column="51" />
+            <state relative-caret-position="646">
+              <caret line="52" column="47" selection-start-line="52" selection-start-column="47" selection-end-line="52" selection-end-column="47" />
             </state>
           </provider>
         </entry>
@@ -90,8 +91,8 @@
       <file leaf-file-name="upT3000.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/kbsumme/templates/kbsumme/upT3000.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="410">
-              <caret line="50" column="31" selection-start-line="50" selection-start-column="31" selection-end-line="50" selection-end-column="31" />
+            <state relative-caret-position="684">
+              <caret line="66" column="4" selection-start-line="66" selection-start-column="4" selection-end-line="66" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -140,11 +141,11 @@
         <option value="$PROJECT_DIR$/../PyCrash/die_visual.py" />
         <option value="$PROJECT_DIR$/kbsumme/urls.py" />
         <option value="$PROJECT_DIR$/kbsumme/templates/kbsumme/projectStat.html" />
-        <option value="$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html" />
         <option value="$PROJECT_DIR$/SOIC/templates/base.html" />
         <option value="$PROJECT_DIR$/kbsumme/templates/kbsumme/home.html" />
-        <option value="$PROJECT_DIR$/kbsumme/views.py" />
+        <option value="$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html" />
         <option value="$PROJECT_DIR$/kbsumme/models.py" />
+        <option value="$PROJECT_DIR$/kbsumme/views.py" />
         <option value="$PROJECT_DIR$/kbsumme/templates/kbsumme/upT3000.html" />
       </list>
     </option>
@@ -184,13 +185,6 @@
               <item name="SOIC-Project" type="462c0819:PsiDirectoryNode" />
               <item name="kbsumme" type="462c0819:PsiDirectoryNode" />
               <item name="templates" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="SOIC-Project" type="b2602c69:ProjectViewProjectNode" />
-              <item name="SOIC-Project" type="462c0819:PsiDirectoryNode" />
-              <item name="kbsumme" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
-              <item name="kbsumme" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="SOIC-Project" type="b2602c69:ProjectViewProjectNode" />
@@ -499,13 +493,6 @@
     <entry file="file://$PROJECT_DIR$/media/Graph_stacked205819.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="76">
-          <caret line="4" column="51" selection-start-line="4" selection-start-column="51" selection-end-line="4" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/SOIC/templates/base.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="399">
@@ -530,16 +517,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/kbsumme/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-70">
-          <caret line="158" column="33" lean-forward="true" selection-start-line="158" selection-start-column="33" selection-end-line="158" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#64#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/SOIC/settings.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="494">
@@ -554,17 +531,34 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/kbsumme/templates/kbsumme/upPosd.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="646">
+          <caret line="52" column="47" selection-start-line="52" selection-start-column="47" selection-end-line="52" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/kbsumme/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="665">
-          <caret line="35" column="64" selection-start-line="35" selection-start-column="64" selection-end-line="35" selection-end-column="64" />
+        <state relative-caret-position="589">
+          <caret line="31" lean-forward="true" selection-start-line="31" selection-end-line="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/kbsumme/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3686">
+          <caret line="275" column="17" selection-start-line="275" selection-start-column="17" selection-end-line="275" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#64#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/kbsumme/templates/kbsumme/upT3000.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="50" column="31" selection-start-line="50" selection-start-column="31" selection-end-line="50" selection-end-column="31" />
+        <state relative-caret-position="684">
+          <caret line="66" column="4" selection-start-line="66" selection-start-column="4" selection-end-line="66" selection-end-column="4" />
         </state>
       </provider>
     </entry>
