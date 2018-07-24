@@ -2,14 +2,10 @@ from django.db import models
 
 class Posd(models.Model):
     #This class is just repsresenting the cost position in KBSUMME
-    hg = models.IntegerField()
-    pos = models.IntegerField()
+    hgpos = models.IntegerField(primary_key=True)
     description = models.CharField(max_length=200)
     hours = models.CharField(max_length=5)
     cost = models.CharField(max_length=5)
-
-    class Meta:
-        unique_together = (('hg', 'pos'),)
 
 class KbMeta(models.Model):
     #This class is representing the meta data for one project. One row per project only.
@@ -28,12 +24,22 @@ class KbMeta(models.Model):
 
 class T3000db(models.Model):
     #This is the T3000 detail cost calculation
-    #pid = models.IntegerField()
-    hg = models.IntegerField()
-    pos = models.IntegerField()
     hours = models.FloatField()
     cost = models.FloatField()
-    kbmeta = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
+    pid = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
+    hgpos = models.ForeignKey(Posd, on_delete=models.CASCADE)
 
-    #class Meta:
-        #unique_together = (('pid', 'hg', 'pos'),)
+'''
+class Stueckliste(models.Model):
+    #Represents the Stueckliste
+    module = models.CharField(max_length=50)
+    sheet = models.CharField(max_length=50)
+    caname = models.CharField(max_length=50)
+    description = models.CharField(max_length=200)
+    mlfb = models.CharField(max_length=100)
+    qty = models.FloatField()
+    single_cost = models.FloatField()
+    typlical = models.CharField(max_length=50)
+    total_cost = models.FloatField()
+    kbmeta = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
+'''
