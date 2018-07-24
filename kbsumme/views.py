@@ -79,7 +79,7 @@ def upPosdFunc(request, file, posd_objects):
                 posd_inst.hours = ws['D{}'.format(i)].value
             if ws['E{}'.format(i)].value:
                 posd_inst.cost = ws['E{}'.format(i)].value
-            #posd_inst.pk = None
+            posd_inst.pk = None
             posd_inst.save()
 
     except:
@@ -159,6 +159,7 @@ def upT3000Func(request, file, t3000_objects):
     if ws['S4'].value:
         kbmeta_inst.datecalc = ws['S4'].value
 
+    kbmeta_inst.pk = None
     kbmeta_inst.save()
 
     # Fill in the hours and cost from excel KBSUMME.
@@ -167,12 +168,12 @@ def upT3000Func(request, file, t3000_objects):
             t3000_inst.hours = float(ws[item.hours].value)
         if item.cost:
             t3000_inst.cost = float(ws[item.cost].value)
-        t3000_inst.pid = kbmeta_inst
-        t3000_inst.hgpos = item
+        t3000_inst.kbmeta = kbmeta_inst
+        t3000_inst.posd = item
         t3000_inst.pk = None
         t3000_inst.save()
 
-    query_obj = t3000_objects.filter(pid__pid__iexact=str(t3000_inst.pid))
+    query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(t3000_inst.kbmeta.pid))
     #stueckliste_func(file)
     createDetailProjectGraphic(ws['G2'].value, t3000_objects)
     return query_obj
@@ -218,9 +219,9 @@ def stueckliste_func(file):
 
 
 def projectStat(request, pid=205819):
-    #t3000_obj = T3000db.objects
+    t3000_obj = T3000db.objects
     obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
-    #createDetailProjectGraphic(pid, t3000_obj)
+    createDetailProjectGraphic(pid, t3000_obj)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
 

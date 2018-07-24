@@ -56,9 +56,9 @@
                 </thead>
                 {% for item in t3000_objects.all %}
                     <tr align="left">
-                        <td>{{item.pid.pid}}</td>
-                        <td>{{item.pid.projname}}</td>
-                        <td>{{item.hgpos.description}}</td>
+                        <td>{{item.kbmeta.pid}}</td>
+                        <td>{{item.kbmeta.projname}}</td>
+                        <td>{{item.posd.description}}</td>
                         <td>{{item.hours}}</td>
                         <td>{{item.cost}}</td>
                     </tr>

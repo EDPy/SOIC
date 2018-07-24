@@ -28,33 +28,34 @@ def createDetailProjectGraphic(pid, t3000_objects):
         '''
 
     # This variable contains all ellements the sum of groups, e.g. basi enginering, hardware components etc.
-    sum_Dict = {'sum_Eng_Misc': 0.0, 'sum_Basic_Eng': 0.0, 'sum_Detail_Eng': 0.0, 'sum_Cust_Docu': 0.0,
+    sum_Dict = {'sum_General': 0.0, 'sum_Eng_Misc': 0.0, 'sum_Basic_Eng': 0.0, 'sum_Detail_Eng': 0.0, 'sum_Cust_Docu': 0.0,
                 'sum_Unit_Control': 0.0,
                 'sum_Measurement': 0.0, 'sum_Int_Foreign_Sys': 0.0, 'sum_Basic_Eng_E': 0.0, 'sum_Detail_Eng_E': 0.0,
                 'sum_FAT': 0.0, 'sum_Installation': 0.0, 'sum_Commissioning': 0.0, 'sum_HW_Peri': 0.0,
-                'sum_HW_DCS': 0.0, 'sum_HW_E1': 0.0, 'sum_HW_E2': 0.0, 'sum_HW_Installation': 0.0, 'sum_General': 0.0}
+                'sum_HW_DCS': 0.0, 'sum_HW_E1': 0.0, 'sum_HW_E2': 0.0, 'sum_HW_Installation': 0.0, }
 
     # This is noly needed in order to give appropiate names to the graph.
-    dict_Names = {'sum_Eng_Misc': 'Eng. Misc.', 'sum_Basic_Eng': 'Basic Eng.', 'sum_Detail_Eng': 'Detail Eng.',
+    dict_Names = {'sum_General': 'General','sum_Eng_Misc': 'Eng. Misc.', 'sum_Basic_Eng': 'Basic Eng.',
+                  'sum_Detail_Eng': 'Detail Eng.',
                   'sum_Cust_Docu': 'Customer Doc.', 'sum_Unit_Control': 'Unit Control',
                   'sum_Measurement': 'Measurement',
                   'sum_Int_Foreign_Sys': 'Inteface', 'sum_Basic_Eng_E': 'Basic Eng. E.',
                   'sum_Detail_Eng_E': 'Detail Eng. E.',
                   'sum_FAT': 'FAT', 'sum_Installation': 'Installation', 'sum_Commissioning': 'Commissioning',
                   'sum_HW_Peri': 'HW Peripheral', 'sum_HW_DCS': 'HW DCS', 'sum_HW_E1': 'HW ETEC 1',
-                  'sum_HW_E2': 'HW ETEC 2', 'sum_HW_Installation': 'HW Installation', 'sum_General': 'General'}
+                  'sum_HW_E2': 'HW ETEC 2', 'sum_HW_Installation': 'HW Installation',}
 
 
 
     # Project Management. Get specific cost for PM.
     sum_PM = 0.0
-    query_PM = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^1.0')
+    query_PM = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^1.0')
     for item in query_PM:
         sum_PM += item.cost
 
     # Project Commercial. Get specific cost for CPM.
     sum_CPM = 0.0
-    query_CPM = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^96..')
+    query_CPM = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^96..')
     for item in query_CPM:
         sum_CPM += item.cost
 
@@ -62,95 +63,96 @@ def createDetailProjectGraphic(pid, t3000_objects):
     # GENERAL INCLUDING PM AND CPM
     # Querry fetches and filters all elements related to General section. Sum is stored in sum_Dict['sum_General']
 
-    querry_General = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^[1-8].[0,1]')
-    for item in querry_General:
+    query_General = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).\
+        filter(posd__hgpos__regex=r'^[1-8]..\y')
+    for item in query_General:
         sum_Dict['sum_General'] += item.cost
     sum_Dict['sum_General'] += sum_CPM
 
 
     # MISC ENGINEERING
-    # Querry fetches and filters all elements related to Engineering
-    query_Eng_Misc = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^10..')
+    # Query fetches and filters all elements related to Engineering
+    query_Eng_Misc = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^10[1-6]0')
     for item in query_Eng_Misc:
         sum_Dict['sum_Eng_Misc'] += item.cost
 
     # BASIC ENGINEERING
-    query_Basic_Eng = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^11..')
+    query_Basic_Eng = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^11..')
     for item in query_Basic_Eng:
         sum_Dict['sum_Basic_Eng'] += item.cost
 
     # DETAIL ENGINEERING
-    query_Detail_Eng = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^12..')
+    query_Detail_Eng = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^12..')
     for item in query_Detail_Eng:
         sum_Dict['sum_Detail_Eng'] += item.cost
 
     # CUSTOMER DOCUMENTATION
-    query_Cust_Docu = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^13..')
+    query_Cust_Docu = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^13..')
     for item in query_Cust_Docu:
         sum_Dict['sum_Cust_Docu'] += item.cost
 
     # UNIT CONTROL
-    query_Unit_Control = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^14..')
+    query_Unit_Control = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^14..')
     for item in query_Unit_Control:
         sum_Dict['sum_Unit_Control'] += item.cost
 
     # MEASUREMENT ANALYSIS
-    query_Measurement = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^15..')
+    query_Measurement = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^15..')
     for item in query_Measurement:
         sum_Dict['sum_Measurement'] += item.cost
 
     # INTERFACE FOREIGN SYSTEM
-    query_Int_Foreign_Sys = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^16..')
+    query_Int_Foreign_Sys = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^16..')
     for item in query_Int_Foreign_Sys:
         sum_Dict['sum_Int_Foreign_Sys'] += item.cost
 
     # BASIC ENGINEERING ETEC
-    query_Basic_Eng_E = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^17..')
+    query_Basic_Eng_E = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^17..')
     for item in query_Basic_Eng_E:
         sum_Dict['sum_Basic_Eng'] += item.cost
 
     # DETAIL ENGINEERING ETEC
-    query_Detail_Eng_E = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^18..')
+    query_Detail_Eng_E = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^18..')
     for item in query_Detail_Eng_E:
         sum_Dict['sum_Detail_Eng_E'] += item.cost
 
     # FAT
-    query_FAT = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^19..')
+    query_FAT = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^19..')
     for item in query_FAT:
         sum_Dict['sum_FAT'] += item.cost
 
     # SERVICE AND HARDWARE FOR INSTALLATION
-    query_Installation = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^2...')
+    query_Installation = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^2...')
     for item in query_Installation:
         sum_Dict['sum_Installation'] += item.cost
 
     # COMMISSIONING
-    query_Commissioning = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^3...')
+    query_Commissioning = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^3...')
     for item in query_Commissioning:
         sum_Dict['sum_Commissioning'] += item.cost
 
     # HW PERIPHERALS
-    query_HW_Peri = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^4...')
+    query_HW_Peri = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^4...')
     for item in query_HW_Peri:
         sum_Dict['sum_HW_Peri'] += item.cost
 
     # HW FOR CENTRAL / DISTRIBUTED I&C
-    query_HW_DCS = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^5...')
+    query_HW_DCS = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^5...')
     for item in query_HW_DCS:
         sum_Dict['sum_HW_DCS'] += item.cost
 
     # HW ET1
-    query_HW_E1 = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^6...')
+    query_HW_E1 = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^6...')
     for item in query_HW_E1:
         sum_Dict['sum_HW_E1'] += item.cost
 
     # HW ET2
-    query_HW_E2 = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^7...')
+    query_HW_E2 = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^7...')
     for item in query_HW_E2:
         sum_Dict['sum_HW_E2'] += item.cost
 
     # HW FOR INSTALLATION
-    query_HW_Installation = t3000_objects.filter(pid__pid__iexact=str(pid)).filter(hgpos__hgpos__regex=r'^8...')
+    query_HW_Installation = t3000_objects.filter(kbmeta__pid__iexact=str(pid)).filter(posd__hgpos__regex=r'^8...')
     for item in query_HW_Installation:
         sum_Dict['sum_HW_Installation'] += item.cost
 
@@ -165,7 +167,7 @@ def createDetailProjectGraphic(pid, t3000_objects):
 
     # In this loop it is decided which section will be shown in the graph, and which to be put in misc. section
     for value in sum_Dict:
-        if sum_Dict[value] < 10.0:
+        if sum_Dict[value] < 20000.0:
             sum_Misc += sum_Dict[value]
         else:
             chart_Name.append(dict_Names[value])
@@ -180,7 +182,7 @@ def createDetailProjectGraphic(pid, t3000_objects):
     print(sum(chart_Value))
     chartStacked = pygal.StackedBar()
 
-    chartStacked.title = projectName(pid)
+    chartStacked.title = 'TEST' #projectName(pid)
 
     for i in range(0, len(chart_Name)):
         chartStacked.add(chart_Name[i], chart_Value[i])

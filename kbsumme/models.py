@@ -2,14 +2,14 @@ from django.db import models
 
 class Posd(models.Model):
     #This class is just repsresenting the cost position in KBSUMME
-    hgpos = models.IntegerField(primary_key=True)
+    hgpos = models.IntegerField(unique=True)
     description = models.CharField(max_length=200)
     hours = models.CharField(max_length=5)
     cost = models.CharField(max_length=5)
 
 class KbMeta(models.Model):
     #This class is representing the meta data for one project. One row per project only.
-    pid = models.IntegerField(primary_key=True)
+    pid = models.IntegerField(unique=True)
     klaversion = models.CharField(max_length=50, blank=True)
     calcbase = models.CharField(max_length=10, blank=True)
     contractbase = models.CharField(max_length=10, blank=True)
@@ -22,12 +22,17 @@ class KbMeta(models.Model):
     endcustomer = models.CharField(max_length=100, blank=True)
     phase = models.CharField(max_length=50, blank=True) # Budget / Firm-Bid
 
+    '''
+    class Meta:
+        unique_together = (("pid", "phase"),)
+    '''
+
 class T3000db(models.Model):
     #This is the T3000 detail cost calculation
     hours = models.FloatField()
     cost = models.FloatField()
-    pid = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
-    hgpos = models.ForeignKey(Posd, on_delete=models.CASCADE)
+    kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
+    posd = models.ForeignKey(Posd, to_field="hgpos", db_column="posd", on_delete=models.CASCADE)
 
 '''
 class Stueckliste(models.Model):
