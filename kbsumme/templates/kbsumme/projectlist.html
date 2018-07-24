@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+      <h1 class="display-5">PROJECTS IN DATABASE </h1>
+    </div>
+
+    <br />
+
+
+    <div class="container">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                <tr align="left">
+                    <th>Project</th>
+                    <th>Customer</th>
+                    <th>QuotationNo</th>
+                    <th>Date</th>
+                    <th>Phase</th>
+                    <th>KLA</th>
+                </tr>
+                </thead>
+                {% for item in kbmeta_obj.all %}
+                    <tr align="left">
+                        <td><a href="{{item.filename}}">{{item.projname}}</a></td>
+                        <td>{{item.customer}}</td>
+                        <td>{{item.quotno}}</td>
+                        <td>{{item.datecalc}}</td>
+                        <td>{{item.phase}}</td>
+                        <td>{{item.klaversion}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+    </div>
+
+
+{% endblock %}

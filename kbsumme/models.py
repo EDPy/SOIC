@@ -29,3 +29,17 @@ class T3000db(models.Model):
     pid = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
     hgpos = models.ForeignKey(Posd, on_delete=models.CASCADE)
 
+'''
+class Stueckliste(models.Model):
+    #Represents the Stueckliste
+    module = models.CharField(max_length=50)
+    sheet = models.CharField(max_length=50)
+    caname = models.CharField(max_length=50)
+    description = models.CharField(max_length=200)
+    mlfb = models.CharField(max_length=100)
+    qty = models.FloatField()
+    single_cost = models.FloatField()
+    typlical = models.CharField(max_length=50)
+    total_cost = models.FloatField()
+    kbmeta = models.ForeignKey(KbMeta, on_delete=models.CASCADE)
+'''
