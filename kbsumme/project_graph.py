@@ -177,9 +177,6 @@ def createDetailProjectGraphic(pid, t3000_objects):
         chart_Name.append('Misc')
         chart_Value.append(sum_Misc)
 
-    print(chart_Name)
-    print(chart_Value)
-    print(sum(chart_Value))
     chartStacked = pygal.StackedBar()
 
     chartStacked.title = 'TEST' #projectName(pid)

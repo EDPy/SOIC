@@ -5,17 +5,23 @@ import os
 import openpyxl
 
 
-from .models import Posd, T3000db, KbMeta #, Stueckliste
+from .models import Posd, T3000db, KbMeta, Stueckliste
 from .project_graph import createDetailProjectGraphic
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 t3000_inst = T3000db() # Same as post_inst
 kbmeta_objects = KbMeta.objects
-#stueckl_inst = Stueckliste()
 
 def home(request):
-    return render(request, 'kbsumme/home.html', {'kbmetaobj': kbmeta_objects.all()})
+    t3000_objects = T3000db.objects
+    query_total = t3000_objects.filter(posd__hgpos__regex=r'^(10000)\y')
+    query_dict = {'totalcost':[item.cost]}
+    for i, item in iter(query_total):
+        query_dict['totalcost'][i] = item.cost
+    for item in query_total:
+        print(item.cost)
+    return render(request, 'kbsumme/home.html', {'kbmetaobj': kbmeta_objects.all(), 'query_list': query_list})
 
 def upPosd(request):
     ''' After form sumitted in html 'POST', it will be catched here and evaluated
@@ -126,14 +132,14 @@ def upT3000Func(request, file, t3000_objects):
     kbmeta_inst = KbMeta()
     posd_objects = Posd.objects
 
-    try:
-        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-        ws = wb['KBSUMME']
-    except:
-        print('Error: Could not read workbook or worksheet')
-        print('Please check if worksheet KBSUMME exists')
-        return render(request, 'kbsumme/upT3000.html', {
-            'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
+    #try:
+    wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
+    ws = wb['KBSUMME']
+    #except:
+    #    print('Error: Could not read workbook or worksheet')
+    #    print('Please check if worksheet KBSUMME exists')
+    #    return render(request, 'kbsumme/upT3000.html', {
+    #        'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
 
     #Fill in the META data to kbmeta database
     #PID, quotno, dateupload, filename cant be empty NULL or not allwed to be emtpy:
@@ -175,20 +181,17 @@ def upT3000Func(request, file, t3000_objects):
 
     query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(t3000_inst.kbmeta.pid))
     #stueckliste_func(file)
-    createDetailProjectGraphic(ws['G2'].value, t3000_objects)
-    return query_obj
 
-'''
-def stueckliste_func(file):
     try:
         wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
         ws = wb['Stueckliste']
     except:
         print('Error: Could not read workbook or worksheet')
-        print('Please check if worksheet KBSUMME exists')
+        print('Please check if worksheet Stueckliste exists')
         return render(request, 'kbsumme/upT3000.html', {
-            'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
+            'error': 'Workbook could not be loaded or worksheet could not be read'})
 
+    stueckl_inst = Stueckliste()
     i = 1
     while i < ws.max_row:
         i+=1
@@ -213,14 +216,16 @@ def stueckliste_func(file):
             stueckl_inst.total_cost = ws['I{}'.format(i)].value
 
         stueckl_inst.kbmeta = kbmeta_inst
-        #posd_inst.pk = None
+        stueckl_inst.pk = None
         stueckl_inst.save()
-'''
 
+    createDetailProjectGraphic(ws['G2'].value, t3000_objects)
+    return query_obj
 
 def projectStat(request, pid=205819):
     t3000_obj = T3000db.objects
     obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
+
     createDetailProjectGraphic(pid, t3000_obj)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
