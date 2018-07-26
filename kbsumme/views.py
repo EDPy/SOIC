@@ -7,6 +7,7 @@ import openpyxl
 
 from .models import Posd, T3000db, KbMeta, Stueckliste
 from .project_graph import createDetailProjectGraphic
+from .io_statistic import iograph, total_IO
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -15,13 +16,14 @@ kbmeta_objects = KbMeta.objects
 
 def home(request):
     t3000_objects = T3000db.objects
+    iograph()
+    '''
     query_total = t3000_objects.filter(posd__hgpos__regex=r'^(10000)\y')
-    query_dict = {'totalcost':[item.cost]}
-    for i, item in iter(query_total):
-        query_dict['totalcost'][i] = item.cost
-    for item in query_total:
-        print(item.cost)
-    return render(request, 'kbsumme/home.html', {'kbmetaobj': kbmeta_objects.all(), 'query_list': query_list})
+    query_dict = {'totalcost': [0.0], 'projname':['Test'], 'customer':['SK'],
+    'datecalc':['2017-01-01'], 'ExcelCalc': ['file'], 'dateupload':['2017-01-02'] }
+    '''
+
+    return render(request, 'kbsumme/home.html', {'kbmetaobj': kbmeta_objects.all(),})
 
 def upPosd(request):
     ''' After form sumitted in html 'POST', it will be catched here and evaluated
@@ -126,7 +128,6 @@ def upT3000Func(request, file, t3000_objects):
     Data will be read into database in table T3000db. Iteration of all items of KBSUMME based on Posd
     object-class-database. Important: Hours and Cost reference value in Posd must be right otherwise
     wrong data will be inserted into database.
-    TODO: Some plausibility check to see if cell reference with ws[item.hours].value and ws[item.cost].value is right
     '''
 
     kbmeta_inst = KbMeta()
@@ -229,6 +230,8 @@ def projectStat(request, pid=205819):
     createDetailProjectGraphic(pid, t3000_obj)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
-
 def projectlist(request):
     return render(request, 'kbsumme/projectlist.html', {'kbmeta_obj':kbmeta_objects})
+
+def iocount(request):
+    return render(request, 'kbsumme/iostat.html')
