@@ -1,0 +1,79 @@
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>up PBB</title>
+
+    <style>
+      .container{
+        width : 80%;
+        margin:auto;
+      }
+
+      .form{
+        border:1px solid;
+        padding:15px;
+        background-color: grey;
+        color:white;
+        font-weight: bold;
+      }
+      div {
+        padding:15px;
+
+      }
+    </style>
+
+
+
+    <!-- Bootstrap core CSS
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+-->
+    <!-- Custom styles for this template -->
+  </head>
+
+  <body>
+    <div class=container>
+
+
+
+      <div>
+        <form method="POST" enctype="multipart/form-data">
+          <div class=form>Upload Pbb
+          </div>
+          <div>
+            <select name='pid'>
+              <option value="000000">Select PID</option>
+              {% for item in kbmetaobj.all %}
+              <option value="{{ item.pid }}">{{ item.pid }} - {{ item.projname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% csrf_token %}
+          <input class="" type="file" name="myfile" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+          </br></br>
+          <button class="btn btn-primary" type="submit">Upload</button>
+        </form>
+      </div>
+
+      <div>
+        <img src="https://pbs.twimg.com/profile_images/987010603964358656/sWcb-0YM_400x400.jpg" alt="nonesense">
+      </div>
+      <div>
+        <iframe width="620" height="515" src="https://www.youtube.com/embed/QnsGx1RQ5bk">
+        </iframe>
+      </div>
+
+
+    </div> <!-- div container -->
+  </body>
+
+
+  <footer>
+  </foter>
+
+</html>

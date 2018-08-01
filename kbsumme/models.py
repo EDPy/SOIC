@@ -29,14 +29,15 @@ class KbMeta(models.Model):
 
 class T3000db(models.Model):
     #This is the T3000 detail cost calculation
-    hours = models.FloatField()
-    cost = models.FloatField()
     kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
     posd = models.ForeignKey(Posd, to_field="hgpos", db_column="posd", on_delete=models.CASCADE)
+    hours = models.FloatField()
+    cost = models.FloatField()
 
 
 class Stueckliste(models.Model):
     #Represents the Stueckliste
+    kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
     module = models.CharField(max_length=50)
     sheet = models.CharField(max_length=50)
     caname = models.CharField(max_length=50)
@@ -46,4 +47,43 @@ class Stueckliste(models.Model):
     single_cost = models.FloatField()
     typlical = models.CharField(max_length=50)
     total_cost = models.FloatField()
+
+class PbbMeta(models.Model):
+    #Represents the PBB table
     kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
+    offer_no = models.IntegerField(unique=True)
+    country_inst = models.CharField(max_length=100, blank=True)
+    planttype = models.CharField(max_length=50, blank=True)
+    projname = models.CharField(max_length=100, blank=True)
+    qty_units = models.IntegerField()
+    total_output = models.FloatField()
+    customer = models.CharField(max_length=100, blank=True)
+    endcustomer = models.CharField(max_length=100, blank=True)
+    bidmanager = models.CharField(max_length=100, blank=True)
+    fx_rate = models.FloatField()
+
+class Pbb(models.Model):
+    #PBB tatle cost, price information
+    pbbmeta = models.ForeignKey(PbbMeta, to_field="offer_no", db_column="pbbmeta", on_delete=models.CASCADE)
+    kind_of_business = models.CharField(max_length=150)
+    entity = models.CharField(max_length=20, blank=True)
+    escalation = models.FloatField()
+    transportation = models.FloatField()
+    custom_tax = models.FloatField()
+    fx_gain_loss = models.FloatField()
+    financing = models.FloatField()
+    insurance = models.FloatField()
+    bank_charges = models.FloatField()
+    technical_risk = models.FloatField()
+    warranty = models.FloatField()
+    sales_oh = models.FloatField()
+    net_margin = models.FloatField()
+    single_cost_euro = models.FloatField()
+    price = models.FloatField()
+    price_nego = models.FloatField()
+    total_surcharges = models.FloatField()
+    total_includings = models.FloatField()
+    total_sm = models.FloatField()
+    total_cost = models.FloatField()
+    total_price_euro = models.FloatField()
+    total_price_fx = models.FloatField()

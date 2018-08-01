@@ -9,4 +9,5 @@ urlpatterns = [
     path('iocount', views.iocount, name='iocount'),
     path('projectStat', views.projectStat, name='projectStat'), #TODO check the purpose of name again.
     path('<int:pid>', views.projectStat, name='projectStats'),
+    path('upPBB', views.upPBB, name='upPBB'),
 ]
