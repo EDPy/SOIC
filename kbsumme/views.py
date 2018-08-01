@@ -5,7 +5,7 @@ import os
 import openpyxl
 
 
-from .models import Posd, T3000db, KbMeta, Stueckliste
+from .models import Posd, T3000db, KbMeta, Stueckliste, Pbb, PbbMeta
 from .project_graph import createDetailProjectGraphic
 from .io_statistic import iograph, total_IO
 
@@ -264,10 +264,12 @@ def upPBBFunc(request, file, pid):
     Once found, values will be stored to database.
     '''
     kbmeta_inst = KbMeta()
+    kbmeta_objects = KbMeta.objects
+    query_kb = kbmeta_objects.get(pid__iexact=str(pid))
 
     #try:
     wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-    ws = wb['calculation']
+    ws = wb['Calculation']
     #except:
     #    print('Error: Could not read workbook or worksheet')
     #    print('Please check if worksheet calculation exists')
@@ -289,16 +291,21 @@ def upPBBFunc(request, file, pid):
         #Goes through each column A to Z and do following:
         for row in range(1,23):
             #Goes through each row
-            if 'offer' in ws['{}{}'.format(col, row)].value:
-                cell_offerno = col_list[i+1] + str(row)
-            if 'forex' in ws['{}{}'.format(col, row)].value:
-                cell_forex = col_list[i+1] + str(row)
+            if ws['{}{}'.format(col, row)].value:
+                if 'Offer' in str(ws['{}{}'.format(col, row)].value):
+                    cell_offerno = col_list[i+1] + str(row)
+            if ws['{}{}'.format(col, row)].value:
+                if 'Basic rate' in str(ws['{}{}'.format(col, row)].value):
+                    cell_forex = col_list[i+1] + str(row)
+
+                    #TODO: in case cell_offerno and cell_forex could not be assigned.
+                    #It has to be catched, because below cell will try to reference it.
 
 
     pbbmeta_inst = PbbMeta()
-    pbbmeta_inst.offer_no = ws['{}'.format(cell_offerno)].value
-    pbbmeta_inst.projname = ws['{}'.format()].value #TODO: Put the cell reference here
-    pbbmeta_inst.customer = ws['{}'.format()].value #TODO: Put the cell reference here as well
+    pbbmeta_inst.offer_no = 100002 #ws['{}'.format(cell_offerno)].value
+    pbbmeta_inst.projname = ws['{}'.format('B3')].value
+    pbbmeta_inst.customer = ws['{}'.format('B4')].value
     pbbmeta_inst.fx_rate = ws['{}'.format(cell_forex)].value
 
     #pbbmeta_inst.country_inst =
@@ -309,7 +316,7 @@ def upPBBFunc(request, file, pid):
     #pbbmeta_inst.bidmanager =
 
     pbbmeta_inst.pk = None
-    pbbmeta_inst.kbmeta = kbmeta_inst
+    pbbmeta_inst.kbmeta = query_kb
     pbbmeta_inst.save()
 
     row = 0
