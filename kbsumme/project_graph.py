@@ -1,4 +1,4 @@
-from .models import KbMeta
+from .models import KbMeta, T3000db
 
 import matplotlib.path as plt
 import pygal
@@ -138,13 +138,14 @@ def sum_calculation(pid, t3000_objects):
         return sum_Dict
 
 
-def createDetailProjectGraphic(pid, t3000_objects):
+def createDetailProjectGraphic(pid):
     '''
     This function takes the interim functions from sum_calculation and plots
     a StackedBar. Items below a certain amount will be shifted to 'MISC'
     in order not to overblow the chart
     '''
 
+    t3000_objects = T3000db.objects
     # This is noly needed in order to give appropiate names to the graph.
     dict_Names = {'sum_General': 'General','sum_Eng_Misc': 'Eng. Misc.', 'sum_Basic_Eng': 'Basic Eng.',
                   'sum_Detail_Eng': 'Detail Eng.',

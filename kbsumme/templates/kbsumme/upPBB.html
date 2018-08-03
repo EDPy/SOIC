@@ -26,6 +26,12 @@
         padding:15px;
 
       }
+      .error{
+        color:red;
+        font-weight: bold;
+        font-size: 24px;
+
+      }
     </style>
 
 
@@ -38,6 +44,11 @@
 
   <body>
     <div class=container>
+      <div class=error>
+        {% if error %}
+        {{ error }}
+        {% endif %}
+      </div>
 
 
 
@@ -59,15 +70,6 @@
           <button class="btn btn-primary" type="submit">Upload</button>
         </form>
       </div>
-
-      <div>
-        <img src="https://pbs.twimg.com/profile_images/987010603964358656/sWcb-0YM_400x400.jpg" alt="nonesense">
-      </div>
-      <div>
-        <iframe width="620" height="515" src="https://www.youtube.com/embed/QnsGx1RQ5bk">
-        </iframe>
-      </div>
-
 
     </div> <!-- div container -->
   </body>

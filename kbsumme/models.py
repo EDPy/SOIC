@@ -34,7 +34,6 @@ class T3000db(models.Model):
     hours = models.FloatField()
     cost = models.FloatField()
 
-
 class Stueckliste(models.Model):
     #Represents the Stueckliste
     kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
@@ -66,7 +65,7 @@ class Pbb(models.Model):
     #PBB tatle cost, price information
     pbbmeta = models.ForeignKey(PbbMeta, to_field="offer_no", db_column="pbbmeta", on_delete=models.CASCADE)
     kind_of_business = models.CharField(max_length=150)
-    entity = models.CharField(max_length=20, blank=True)
+    entity = models.CharField(max_length=20, null=True)
     escalation = models.FloatField(null=True)
     transportation = models.FloatField(null=True)
     custom_tax = models.FloatField(null=True)

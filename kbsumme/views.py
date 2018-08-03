@@ -10,6 +10,10 @@ from .project_graph import createDetailProjectGraphic
 from .io_statistic import iograph, total_IO
 
 
+#TODO: Upload with choice of upload sheet: KBSUMME, Calculation, Stueckliste
+#TODO: Before upload check all necesary fields, if okay.. include in database
+#TODO: Delete database entry possibility
+
 #global variables objects
 t3000_inst = T3000db() # Same as post_inst
 kbmeta_objects = KbMeta.objects
@@ -43,8 +47,14 @@ def upPosd(request):
             fs = FileSystemStorage()
             filename = fs.save(myfile.name.replace(" ", ""), myfile)
             uploaded_file_url = fs.url(filename)
-            upPosdFunc(request, uploaded_file_url, posd_objects)
-            return render(request, 'kbsumme/upPosd.html', {
+            r = {}
+            r = upPosdFunc(request, uploaded_file_url, posd_objects)
+            if r['code'] == 1:
+                return render(request, 'kbsumme/upPosd.html', {
+                'error':r['message'], 'posd_objects':posd_objects,
+                })
+            else:
+                return render(request, 'kbsumme/upPosd.html', {
                 'uploaded_file_url': uploaded_file_url,
                 'success':'File successful loaded', 'posd_objects':posd_objects,})
         else:
@@ -59,13 +69,15 @@ def upPosdFunc(request, file, posd_objects):
     Otherwise all files are read into the Posd database. Filled in with data from the worksheet on pre-defined
     fields. Here: A2-A204, B2-B204, C2-C204, D2-D204, E2-E204
     '''
+
+    r = {'code':0, 'message':''}
     try:
         wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True)
         ws = wb['T1_general']
     except:
-        print('Error: Could not read workbook or worksheet')
-        print('Please check if worksheet KBSUMME exists')
-        return
+        r['code']=1
+        r['message']='Could not load workbook or worksheet "T1_general"'
+        return r
 
     posd_inst = Posd()  # Is an instance of class Posd to read into the database
 
@@ -93,10 +105,11 @@ def upPosdFunc(request, file, posd_objects):
             posd_inst.save()
 
     except:
-        return render(request, 'kbsumme/upPosd.html', {
-            'error': 'Integrity Error, Project ID already exist in database', 'posd_objects': posd_objects})
-        #TODO Does not show ERROR message on HTML page
+        r['code']=1
+        r['message']= 'Integrity Error, Project ID already exist in database'
+        return r
 
+    return r
 
 def upT3000_Meta(request):
     '''
@@ -113,10 +126,19 @@ def upT3000_Meta(request):
             filename = fs.save(myfile.name.replace(" ", ""), myfile)
             print(filename)
             uploaded_file_url = fs.url(filename)
-            query_obj = upT3000Func(request, uploaded_file_url, t3000_objects)
-            return render(request, 'kbsumme/upT3000.html', {
+            r = {}
+            r = upT3000Func(uploaded_file_url)
+
+            if r['code'] == 1:
+                return render(request, 'kbsumme/upT3000.html', {
+                'error':r['message']
+                } )
+            else:
+                query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(r['pid']))
+                return render(request, 'kbsumme/upT3000.html', {
         'uploaded_file_url': uploaded_file_url,
         'success': 'File successful loaded', 't3000_objects': query_obj})
+
         else:
             return render(request, 'kbsumme/upT3000.html', {
             'error': 'Please select a file to upload'})
@@ -125,7 +147,7 @@ def upT3000_Meta(request):
         return render(request, 'kbsumme/upT3000.html')
 
 
-def upT3000Func(request, file, t3000_objects):
+def upT3000Func(file):
     '''
     Data will be read into database in table T3000db. Iteration of all items of KBSUMME based on Posd
     object-class-database. Important: Hours and Cost reference value in Posd must be right otherwise
@@ -134,15 +156,22 @@ def upT3000Func(request, file, t3000_objects):
 
     kbmeta_inst = KbMeta()
     posd_objects = Posd.objects
+    r = {'code':0, 'message':'', 'pid':0}
 
-    #try:
-    wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-    ws = wb['KBSUMME']
-    #except:
-    #    print('Error: Could not read workbook or worksheet')
-    #    print('Please check if worksheet KBSUMME exists')
-    #    return render(request, 'kbsumme/upT3000.html', {
-    #        'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
+    try:
+        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
+        ws = wb['KBSUMME']
+    except:
+        r['code'] = 1
+        r['message'] = 'Workbook could not be loaded or worksheet KBSUMME could not be read'
+        return r
+
+    try:
+        ws_stckliste = wb['Stueckliste']
+    except:
+        r['code'] = 1
+        r['message'] = 'Workbook Stueckliste could not be loaded or worksheet could not be read'
+        return r
 
     #Fill in the META data to kbmeta database
     #PID, quotno, dateupload, filename cant be empty NULL or not allwed to be emtpy:
@@ -150,6 +179,7 @@ def upT3000Func(request, file, t3000_objects):
     kbmeta_inst.quotno = ws['G2'].value
     kbmeta_inst.dateupload = timezone.datetime.now()
     kbmeta_inst.filename = file
+
 
     #Values which can be empty. In this case value will output NULL, which is set to not allowed.
     #For char we only accept emtpy string, otherwise double meaning with NULL and empty string will be the case.
@@ -182,54 +212,51 @@ def upT3000Func(request, file, t3000_objects):
         t3000_inst.pk = None
         t3000_inst.save()
 
-    query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(t3000_inst.kbmeta.pid))
-    #stueckliste_func(file)
 
-    try:
-        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-        ws = wb['Stueckliste']
-    except:
-        print('Error: Could not read workbook or worksheet')
-        print('Please check if worksheet Stueckliste exists')
-        return render(request, 'kbsumme/upT3000.html', {
-            'error': 'Workbook could not be loaded or worksheet could not be read'})
+    #stueckliste_func(file)
 
     stueckl_inst = Stueckliste()
     i = 1
-    while i < ws.max_row:
+    while i < ws_stckliste.max_row:
         i+=1
 
-        if ws['A{}'.format(i)].value:
+        if ws_stckliste['A{}'.format(i)].value:
             stueckl_inst.module = ws['A{}'.format(i)].value
-        if ws['B{}'.format(i)].value:
+        if ws_stckliste['B{}'.format(i)].value:
             stueckl_inst.sheet = ws['B{}'.format(i)].value
-        if ws['C{}'.format(i)].value:
+        if ws_stckliste['C{}'.format(i)].value:
             stueckl_inst.caname = ws['C{}'.format(i)].value
-        if ws['D{}'.format(i)].value:
+        if ws_stckliste['D{}'.format(i)].value:
             stueckl_inst.description = ws['D{}'.format(i)].value
-        if ws['E{}'.format(i)].value:
+        if ws_stckliste['E{}'.format(i)].value:
             stueckl_inst.mlfb = ws['E{}'.format(i)].value
-        if ws['F{}'.format(i)].value:
+        if ws_stckliste['F{}'.format(i)].value:
             stueckl_inst.qty = ws['F{}'.format(i)].value
-        if ws['G{}'.format(i)].value:
+        if ws_stckliste['G{}'.format(i)].value:
             stueckl_inst.single_cost = ws['G{}'.format(i)].value
-        if ws['H{}'.format(i)].value:
+        if ws_stckliste['H{}'.format(i)].value:
             stueckl_inst.typical = ws['H{}'.format(i)].value
-        if ws['I{}'.format(i)].value:
+        if ws_stckliste['I{}'.format(i)].value:
             stueckl_inst.total_cost = ws['I{}'.format(i)].value
 
         stueckl_inst.kbmeta = kbmeta_inst
         stueckl_inst.pk = None
         stueckl_inst.save()
 
-    createDetailProjectGraphic(ws['G2'].value, t3000_objects)
-    return query_obj
+    createDetailProjectGraphic(ws['G2'].value)
+
+    r = upPBBFunc(file, kbmeta_inst.pid)
+    if r['code'] == 1:
+        return r
+
+    r['pid'] = kbmeta_inst.pid
+    return r
 
 def projectStat(request, pid=205819):
     t3000_obj = T3000db.objects
     obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
 
-    createDetailProjectGraphic(pid, t3000_obj)
+    createDetailProjectGraphic(pid)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
 def projectlist(request):
@@ -246,36 +273,42 @@ def upPBB(request):
             fs = FileSystemStorage()
             filename = fs.save(myfile.name.replace(" ", ""), myfile)
             uploaded_file_url = fs.url(filename)
-            upPBBFunc(request, uploaded_file_url, pid)
+            r = {}
+            r = upPBBFunc(uploaded_file_url, pid)
             #query_pid = kbmeta_objects.get(pid__iexact=str(pid))
-            return render(request, 'kbsumme/upPBB.html', {'kbmetaobj':kbmeta_objects})
+            if r['code'] == 1:
+                return render(request, 'kbsumme/upPBB.html', {'error':r['message'],'kbmetaobj':kbmeta_objects})
+            else:
+                return render(request, 'kbsumme/upPBB.html', {'kbmetaobj':kbmeta_objects})
 
-        return render(request, 'kbsumme/upPBB.html', {'kbmetaobj':kbmeta_objects})
+        else:
+            return render(request, 'kbsumme/upPBB.html', {'error':'Please select both\
+            PID and File!', 'kbmetaobj':kbmeta_objects})
 
     else:
         return render(request, 'kbsumme/upPBB.html', {'kbmetaobj':kbmeta_objects})
 
-def upPBBFunc(request, file, pid):
+def upPBBFunc(file, pid):
     '''
-    Read in the calculation sheet. First right wor is searched based on word
+    Read in the calculation sheet. First right word is searched based on word
     'Business'. Linenumber is sotred in headline. Afterwards the 'Indidvidual Amount'
     field is searched and right column will be stored var col_total.
 
     Once found, values will be stored to database.
     '''
+
     kbmeta_inst = KbMeta()
     kbmeta_objects = KbMeta.objects
     query_kb = kbmeta_objects.get(pid__iexact=str(pid))
+    r = {'code':0, 'message':''}
 
-    #try:
-    wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-    ws = wb['Calculation']
-    #except:
-    #    print('Error: Could not read workbook or worksheet')
-    #    print('Please check if worksheet calculation exists')
-    #    return render(request, 'kbsumme/upPBB.html', {
-    #        'error': 'Workbook could not be loaded or worksheet could not be read', 't3000_objects': t3000_objects})
-
+    try:
+        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
+        ws = wb['Calculation']
+    except:
+        r['code'] = 1
+        r['message'] = 'Workbook or worksheet could not be loaded'
+        return r
 
     #Search for the right line in the calculation sheet. Once found remember
     #line number in var headline
@@ -283,30 +316,74 @@ def upPBBFunc(request, file, pid):
     pbb_inst = Pbb()
     # Generate list with alphabet A-Z
     col_list = list(map(chr, range(65, 90)))
-
     #Find cell for offerno from A1 to Z23
-    i=0
+    i = 0
+    chk_offer = 0
+    chk_fx = 0
     for col in col_list:
         i+=1
         #Goes through each column A to Z and do following:
         for row in range(1,23):
             #Goes through each row
             if ws['{}{}'.format(col, row)].value:
-                if 'Offer' in str(ws['{}{}'.format(col, row)].value):
-                    cell_offerno = col_list[i+1] + str(row)
-            if ws['{}{}'.format(col, row)].value:
+                if 'Offer-Nr' in str(ws['{}{}'.format(col, row)].value):
+                    cell_offerno = col_list[i] + str(row)
+                    chk_offer += 1
                 if 'Basic rate' in str(ws['{}{}'.format(col, row)].value):
-                    cell_forex = col_list[i+1] + str(row)
+                    cell_forex = col_list[i] + str(row)
+                    chk_fx += 1
 
-                    #TODO: in case cell_offerno and cell_forex could not be assigned.
-                    #It has to be catched, because below cell will try to reference it.
+    check = chk_offer + chk_fx
 
+    # ================= CHECK both pbb and pbbmeta fields before saving to DB ========================
+
+    if chk_offer == 0:
+        r['code'] = 1
+        r['message'] = 'Offer-No cell could not be found'
+        return r
+
+    e_pid = ws['{}'.format(cell_offerno)].value
+    if e_pid == pid:
+        r['code'] = 1
+        r['message'] = 'Offerno in Calculation and PID do not match'
+        return r
+
+    row = 0
+    i=0
+    while i < ws.max_row:
+        i+=1
+        if 'Business' in str(ws['A{}'.format(i)].value):
+            row = i
+            break
+    #If row with 'Business' could not be found. Print message to user
+    if row == 0:
+        r['code'] = 1
+        r['message'] = 'Could not find headline "Business" in the sheet calculation'
+        return r
+
+
+    #Search for the right column in the calculation sheet. Once found remember db_column
+    #in var col_total.
+    col = ''
+    col_len = 0
+    while col_len < 27:
+        if 'Individual' in str(ws['{}{}'.format(col_list[col_len], row)].value):
+            col = col_list[col_len]
+            break
+        col_len += 1
+
+
+    # ========================================= END OF CHECK cells ===============================
 
     pbbmeta_inst = PbbMeta()
-    pbbmeta_inst.offer_no = 100002 #ws['{}'.format(cell_offerno)].value
-    pbbmeta_inst.projname = ws['{}'.format('B3')].value
-    pbbmeta_inst.customer = ws['{}'.format('B4')].value
-    pbbmeta_inst.fx_rate = ws['{}'.format(cell_forex)].value
+    pbbmeta_inst.offer_no = ws['{}'.format(cell_offerno)].value
+    pbbmeta_inst.projname = ws['{}'.format('B3')].value #Optimze: Search for field projectname
+    pbbmeta_inst.customer = ws['{}'.format('B4')].value #Optimize: Search for field customer
+
+    if chk_fx == 1:
+        pbbmeta_inst.fx_rate = ws['{}'.format(cell_forex)].value
+
+    #TODO: Read in sheets without below value. Afterwards create html page to let somebody insert manually.
 
     #pbbmeta_inst.country_inst =
     #pbbmeta_inst.planttype =
@@ -319,32 +396,10 @@ def upPBBFunc(request, file, pid):
     pbbmeta_inst.kbmeta = query_kb
     pbbmeta_inst.save()
 
-    row = 0
-    while i < ws.max_row:
-        i+=1
-        if row == 0 and 'Business' in str(ws['A{}'.format(i)].value):
-            row = i
-            break
-
-    #If row with 'Business' could not be found. Print message to user
-    if row == 0:
-        return render(request, 'kbsumme/upPBB.html', {
-            'error': 'Could not find headline "Business" in the sheet calculation'
-        })
-    #Search for the right column in the calculation sheet. Once found remember db_column
-    #in var col_total.
-    col = ''
-    col_len = 0
-    while col_len < 27:
-        if 'Individual' in str(ws['{}{}'.format(col_list[col_len], row)].value):
-            col = col_list[col_len]
-            break
-        col_len += 1
 
         #Steht im Feld Single kost etwas drin und steht im B#headline 'T3000
         #oder Hardware' dann lese die Werte aus Spalte B ein.
 
-    pbbmeta_inst = PbbMeta()
     offset = [1,3,4,5,8,9,10,11,12,13,14,17,18,23,26,31]
     i=0
     while i < (col_len): #Loop all columns
@@ -379,14 +434,21 @@ def upPBBFunc(request, file, pid):
             pbb_inst.price = ws['{}{}'.format(col_list[i],(row+offset[14]))].value
             pbb_inst.price_nego = ws['{}{}'.format(col_list[i],(row+offset[15]))].value
             #ii += 1
-
-            pbb_inst.total_surcharges = ws['{}{}'.format(col_list[col_len],(row+7))].value
-            pbb_inst.total_includings = ws['{}{}'.format(col_list[col_len],(row+16))].value
-            pbb_inst.total_sm = ws['{}{}'.format(col_list[col_len],(row+19))].value
-            pbb_inst.total_cost = ws['{}{}'.format(col_list[col_len],(row+23))].value
-            pbb_inst.total_price_euro = ws['{}{}'.format(col_list[col_len],(row+26))].value
-            pbb_inst.total_price_fx = ws['{}{}'.format(col_list[col_len+1],(row+26))].value
-
             pbb_inst.pbbmeta = pbbmeta_inst
             pbb_inst.pk = None
             pbb_inst.save()
+
+    pbb_inst.total_surcharges = ws['{}{}'.format(col_list[col_len],(row+7))].value
+    pbb_inst.total_includings = ws['{}{}'.format(col_list[col_len],(row+16))].value
+    pbb_inst.total_sm = ws['{}{}'.format(col_list[col_len],(row+19))].value
+    pbb_inst.total_cost = ws['{}{}'.format(col_list[col_len],(row+23))].value
+    pbb_inst.total_price_euro = ws['{}{}'.format(col_list[col_len],(row+26))].value
+    pbb_inst.total_price_fx = ws['{}{}'.format(col_list[col_len+1],(row+26))].value
+
+    pbb_inst.pbbmeta = pbbmeta_inst
+    pbb_inst.pk = None
+    pbb_inst.save()
+
+    r['code'] = 0
+    r['message'] = ''
+    return r
