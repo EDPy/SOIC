@@ -6,10 +6,12 @@ class Posd(models.Model):
     description = models.CharField(max_length=200)
     hours = models.CharField(max_length=5)
     cost = models.CharField(max_length=5)
+    pd_hours = models.IntegerField(null=True)
+    pd_cost = models.IntegerField(null=True)
 
 class KbMeta(models.Model):
     #This class is representing the meta data for one project. One row per project only.
-    pid = models.IntegerField(unique=True)
+    pid = models.CharField(max_length=10, unique=True)
     klaversion = models.CharField(max_length=50, blank=True)
     calcbase = models.CharField(max_length=10, blank=True)
     contractbase = models.CharField(max_length=10, blank=True)
@@ -20,7 +22,11 @@ class KbMeta(models.Model):
     projname = models.CharField(max_length=100, blank=True)
     customer = models.CharField(max_length=100, blank=True)
     endcustomer = models.CharField(max_length=100, blank=True)
-    phase = models.CharField(max_length=50, blank=True) # Budget / Firm-Bid
+    phase = models.CharField(max_length=50, blank=True)
+    aprice = models.FloatField(blank=True, null=True)
+    kbsumme = models.BooleanField()
+    pbb = models.BooleanField()
+    stckliste = models.BooleanField()
 
     '''
     class Meta:
@@ -37,20 +43,20 @@ class T3000db(models.Model):
 class Stueckliste(models.Model):
     #Represents the Stueckliste
     kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
-    module = models.CharField(max_length=50)
-    sheet = models.CharField(max_length=50)
-    caname = models.CharField(max_length=50)
+    module = models.CharField(max_length=50, blank=True)
+    sheet = models.CharField(max_length=50, blank=True)
+    caname = models.CharField(max_length=50, blank=True)
     description = models.TextField()
-    mlfb = models.CharField(max_length=100)
+    mlfb = models.CharField(max_length=100, blank=True)
     qty = models.FloatField()
     single_cost = models.FloatField()
-    typlical = models.CharField(max_length=50)
+    typlical = models.CharField(max_length=50, blank=True)
     total_cost = models.FloatField()
 
 class PbbMeta(models.Model):
     #Represents the PBB table
     kbmeta = models.ForeignKey(KbMeta, to_field="pid", db_column="kbmeta", on_delete=models.CASCADE)
-    offer_no = models.IntegerField(unique=True)
+    offer_no = models.IntegerField(unique=True, null=True)
     country_inst = models.CharField(max_length=100, blank=True)
     planttype = models.CharField(max_length=50, blank=True)
     projname = models.CharField(max_length=100, blank=True)
@@ -60,6 +66,14 @@ class PbbMeta(models.Model):
     endcustomer = models.CharField(max_length=100, blank=True)
     bidmanager = models.CharField(max_length=100, blank=True)
     fx_rate = models.FloatField(null=True)
+    total_surcharges = models.FloatField(null=True)
+    total_includings = models.FloatField(null=True)
+    total_sm = models.FloatField(null=True)
+    total_cost = models.FloatField(null=True)
+    total_price_euro = models.FloatField(null=True)
+    total_price_fx = models.FloatField(null=True)
+
+
 
 class Pbb(models.Model):
     #PBB tatle cost, price information
@@ -80,9 +94,11 @@ class Pbb(models.Model):
     single_cost_euro = models.FloatField(null=True)
     price = models.FloatField(null=True)
     price_nego = models.FloatField(null=True)
-    total_surcharges = models.FloatField(null=True)
-    total_includings = models.FloatField(null=True)
-    total_sm = models.FloatField(null=True)
-    total_cost = models.FloatField(null=True)
-    total_price_euro = models.FloatField(null=True)
-    total_price_fx = models.FloatField(null=True)
+
+
+class Customer(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    address = models.CharField(max_length=50, blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    zipcode = models.IntegerField(blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True)

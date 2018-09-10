@@ -1,7 +1,7 @@
 from .models import Stueckliste, KbMeta, T3000db
 import matplotlib.pyplot as plt
 import pygal
-import numpy
+import numpy as np
 from .project_graph import sum_calculation
 
 def iograph():
@@ -47,15 +47,19 @@ def iograph():
     fname = 'media/iocount.svg'
 
     #Calculate the IO-cost
-    np_ldcs_cost = numpy.array(ldcs_cost)
-    np_lio_count = numpy.array(lio_count)
+    np_ldcs_cost = np.array(ldcs_cost)
+    np_lio_count = np.array(lio_count)
     lio_cost = np_ldcs_cost/np_lio_count
 
     lprojname_s = []
     for item in lprojname:
-        lprojname_s.append(item[:8])
+        lprojname_s.append(item)
+
+    x = [x for x in range(len(lprojname_s))]
 
     plt.scatter(lprojname_s, lio_cost, s=(np_lio_count/100))
+    plt.ylabel('IO-Qty')
+    plt.xticks(x,lprojname_s, rotation='vertical')
     plt.savefig(fname)
 
 

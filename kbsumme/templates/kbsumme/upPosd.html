@@ -46,6 +46,8 @@
                     <th>DESCRIPTION</th>
                     <th>HOURS</th>
                     <th>COST</th>
+                    <th>PD HOURS</th>
+                    <th>PD COST</th>
                 </tr>
                 </thead>
                 {% for item in posd_objects.all %}
@@ -54,6 +56,8 @@
                         <td>{{item.description}}</td>
                         <td>{{item.hours}}</td>
                         <td>{{item.cost}}</td>
+                        <td>{{item.pd_hours}}</td>
+                        <td>{{item.pd_cost}}</td>
                     </tr>
                 {% endfor %}
             </table>

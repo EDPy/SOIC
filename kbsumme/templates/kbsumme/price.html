@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="container">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="thead-light">
+                <tr align="left">
+                    <th>Project</th>
+                    <th>Customer</th>
+                    <th>PID</th>
+                    <th>Date</th>
+                    <th>Phase</th>
+                    <th>KLA</th>
+                    <th>Awarded Price</th>
+                </tr>
+                </thead>
+                {% for item in kbmetaobj.all %}
+                    <tr align="left">
+                        <td><a href="{{item.filename}}">{{item.projname}}</a></td>
+                        <td>{{item.customer}}</td>
+                        <td>{{item.pid}}</td>
+                        <td>{{item.datecalc}}</td>
+                        <td>{{item.phase}}</td>
+                        <td>{{item.klaversion}}</td>
+                        <td><input class="form-control" type="number" step="0.01" name="{{item.pid}}" value="{{item.aprice}}" placeholder="Price in EUR"></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <button class="btn btn-outline-primary btn-lg btn-block" type="submit">Save</button>
+        </form>
+    </div>
+
+
+{% endblock %}
