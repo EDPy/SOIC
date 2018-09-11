@@ -9,7 +9,7 @@ import openpyxl
 from .models import Posd, T3000db, KbMeta, Stueckliste, Pbb, PbbMeta, Customer
 from .project_graph import createDetailProjectGraphic
 from .io_statistic import iograph, total_IO
-
+from dateutil.parser import parse
 
 #TODO: Upload with choice of upload sheet: KBSUMME, Calculation, Stueckliste
 #TODO: Before upload check all necesary fields, if okay.. include in database
@@ -18,12 +18,13 @@ from .io_statistic import iograph, total_IO
 #global variables objects
 t3000_inst = T3000db() # Same as post_inst
 kbmeta_objects = KbMeta.objects
+t3000_objects = T3000db.objects
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def home(request):
     #createDetailProjectGraphic(206019)
-    t3000_objects = T3000db.objects
+
     '''
     query_total = t3000_objects.filter(posd__hgpos__regex=r'^(10000)\y')
     query_dict = {'totalcost': [0.0], 'projname':['Test'], 'customer':['SK'],
@@ -96,33 +97,34 @@ def upPosdFunc(request, file, posd_objects):
 
             hgpos = hg+pos
             posd_inst.hgpos = int(hgpos)
+
             if ws['C{}'.format(i)].value:
                 posd_inst.description = ws['C{}'.format(i)].value
             else:
-                pod_inst.description = null
+                posd_inst.description = ''
             if ws['D{}'.format(i)].value:
                 posd_inst.hours = ws['D{}'.format(i)].value
             else:
-                posd_inst.hours = null
+                posd_inst.hours = ''
             if ws['E{}'.format(i)].value:
                 posd_inst.cost = ws['E{}'.format(i)].value
             else:
-                posd_inst.cost = null
+                posd_inst.cost = ''
             if ws['F{}'.format(i)].value:
                 posd_inst.pd_hours = ws['F{}'.format(i)].value
             else:
-                posd_inst.pd_hours = null
+                posd_inst.pd_hours = None
             if ws['G{}'.format(i)].value:
                 posd_inst.pd_cost = ws['G{}'.format(i)].value
             else:
-                posd_inst.pd_cost = null
+                posd_inst.pd_cost = None
 
             posd_inst.pk = None
             posd_inst.save()
 
     except:
         r['code']=1
-        r['message']= 'Integrity Error, Project ID already exist in database'
+        r['message']= 'Integrity Error, Project ID already exist in database\n'
         return r
 
     return r
@@ -147,17 +149,18 @@ def upload(request):
 
             myfile = request.FILES['myfile']
             fs = FileSystemStorage()
-            filename = fs.save(myfile.name.replace(" ", ""), myfile)
+            fname = rename(myfile.name)
+            filename = fs.save(fname, myfile)
             uploaded_file_url = fs.url(filename)
             r = {}
-            r = uploadFunc(uploaded_file_url, formdict)
+            r = pduploadFunc(uploaded_file_url, formdict)
 
             if r['code'] == 1:
                 return render(request, 'kbsumme/upload.html', {
                 'error':r['message'], 'kbmetaobj':kbmeta_objects, 'customerobj':customer_obj
                 } )
             else:
-                query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(r['pid']))
+                query_obj = t3000_objects.filter(kbmeta__pid__iexact=str(formdict['pid']))
                 return render(request, 'kbsumme/upload.html', {
         'uploaded_file_url': uploaded_file_url,
         'success': 'File successful loaded', 'kbmetaobj':kbmeta_objects, 'customerobj':customer_obj})
@@ -167,10 +170,11 @@ def upload(request):
             myfile = request.FILES['myfile_calc']
             pid = request.POST['pid_calc']
             fs = FileSystemStorage()
-            filename = fs.save(myfile.name.replace(" ", ""), myfile)
+            fname = rename(myfile.name)
+            filename = fs.save(fname, myfile)
             uploaded_file_url = fs.url(filename)
             r = {}
-            r = upPBBFunc(uploaded_file_url, pid)
+            r = pdupPBBFunc(uploaded_file_url, pid)
             #query_pid = kbmeta_objects.get(pid__iexact=str(pid))
             if r['code'] == 1:
                 return render(request, 'kbsumme/upload.html', {'error':r['message'],\
@@ -183,10 +187,11 @@ def upload(request):
             myfile = request.FILES['myfile_stck']
             pid = request.POST['pid_stck']
             fs = FileSystemStorage()
-            filename = fs.save(myfile.name.replace(" ", ""), myfile)
+            fname = rename(myfile.name)
+            filename = fs.save(fname, myfile)
             uploaded_file_url = fs.url(filename)
             r = {}
-            r = upStueckliste(uploaded_file_url, pid)
+            r = pdupStueckliste(uploaded_file_url, pid)
             if r['code'] == 1:
                 return render(request, 'kbsumme/upload.html', {'error':r['message'],\
                 'kbmetaobj':kbmeta_objects, 'customerobj':customer_obj})
@@ -203,6 +208,11 @@ def upload(request):
         return render(request, 'kbsumme/upload.html', \
         {'kbmetaobj':kbmeta_objects, 'customerobj':customer_obj})
 
+def rename(name):
+    name = name.replace(' ', '')
+    name = name.replace('&', '')
+    name = name.replace(',', '')
+    return name
 
 def pduploadFunc(file, formdict):
     '''Same as uploadFunc but with pandas library'''
@@ -211,16 +221,16 @@ def pduploadFunc(file, formdict):
     posd_objects = Posd.objects
     r = {'code':0, 'message':''}
 
-    try:
-        pd_kbsumme = pd.read_excel(BASE_DIR+file, sheet_name='KBSUMME')
-    except:
-        r['code'] = 1
-        r['message'] = 'KBSUMME could not be loaded'
-        return r
+    #try:
+    pd_kbsumme = pd.read_excel(BASE_DIR+file, sheet_name='KBSUMME', header=None, na_filter=False)
+    #except:
+    #    r['code'] = 1
+    #    r['message'] = 'KBSUMME could not be loaded'
+    #    return r
 
     if formdict['box_stckl']:
         try:
-            pd_stckl = pd.read_excel(BASE_DIR+file, sheet_name='Stueckliste')
+            pd_stckl = pd.read_excel(BASE_DIR+file, sheet_name='Stueckliste', header=None, na_filter=False)
         except:
             r['code'] = 1
             r['message'] = 'Stueckliste could not be loaded'
@@ -238,7 +248,7 @@ def pduploadFunc(file, formdict):
 
     if formdict['box_calc']:
         try:
-            pd_calc = pd.read_excel(BASE_DIR+file, sheet_name='Calculation')
+            pd_calc = pd.read_excel(BASE_DIR+file, sheet_name='Calculation', header=None, na_filter=False)
         except:
             r['code'] = 1
             r['message'] = 'Calculation could not be loaded'
@@ -256,29 +266,37 @@ def pduploadFunc(file, formdict):
     #Fill in the META data to kbmeta database
     #PID, quotno, dateupload, filename cant be empty NULL or not allwed to be emtpy:
     kbmeta_inst.pid = formdict['pid'] #ws['G2'].value
-    kbmeta_inst.quotno = pd_kbsumme[1,6]
+    kbmeta_inst.quotno = pd_kbsumme.iloc[1,6]
     kbmeta_inst.dateupload = timezone.datetime.now()
     kbmeta_inst.filename = file
     kbmeta_inst.phase = formdict['proptype']
+    kbmeta_inst.customer = formdict['customer'] #ws['G4'].value
+    kbmeta_inst.kbsumme = True
+    if formdict['box_stckl']:
+        kbmeta_inst.stckliste = True
+    else:
+        kbmeta_inst.stckliste = False
+
+    if formdict['box_calc']:
+        kbmeta_inst.pbb = True
+    else:
+        kbmeta_inst.pbb = False
 
     #Values which can be empty. In this case value will output NULL, which is set to not allowed.
     #For char we only accept emtpy string, otherwise double meaning with NULL and empty string will be the case.
-    if ws['S5'].value:
-        kbmeta_inst.klaversion = pd_kbsumme[4,18]
-    if ws['S12'].value:
-        kbmeta_inst.calcbase = pd_kbsumme[11,18]
-    if ws['S13'].value:
-        kbmeta_inst.contractbase = pd_kbsumme[12,18]
-    if ws['G3'].value:
-        kbmeta_inst.projname = pd_kbsumme[2,6]
-
-    #if ws['G4'].value:
-    kbmeta_inst.customer = formdict['customer'] #ws['G4'].value
-
-    if ws['G5'].value:
-        kbmeta_inst.endcustomer = pd_kbsumme[4,6]
-    if ws['S4'].value:
-        kbmeta_inst.datecalc = pd_kbsumme[3,18]
+    if pd_kbsumme.iloc[4,18]:
+        kbmeta_inst.klaversion = str(pd_kbsumme.iloc[4,18])
+    if pd_kbsumme.iloc[11,18]:
+        kbmeta_inst.calcbase = str(pd_kbsumme.iloc[11,18])
+    if pd_kbsumme.iloc[12,18]:
+        kbmeta_inst.contractbase = str(pd_kbsumme.iloc[12,18])
+    if pd_kbsumme.iloc[2,6]:
+        kbmeta_inst.projname = str(pd_kbsumme.iloc[2,6])
+    if pd_kbsumme.iloc[4,6]:
+        kbmeta_inst.endcustomer = str(pd_kbsumme.iloc[4,6])
+    if pd_kbsumme.iloc[3,18]:
+        dt = parse(str(pd_kbsumme.iloc[3,18]))
+        kbmeta_inst.datecalc = str(dt.strftime('%Y-%m-%d'))
 
     kbmeta_inst.pk = None
     kbmeta_inst.kbsumme = True
@@ -286,9 +304,9 @@ def pduploadFunc(file, formdict):
 
     for item in posd_objects.all():
         if item.hours:
-            t3000_inst.hours = float(pd_kbsumme[10, item.pd_hours])
+            t3000_inst.hours = float(pd_kbsumme.iloc[item.pd_hours,10])
         if item.cost:
-            t3000_inst.cost = float(pd_kbsumme[12, item.pd_cost])
+            t3000_inst.cost = float(pd_kbsumme.iloc[item.pd_cost,12])
         t3000_inst.kbmeta = kbmeta_inst
         t3000_inst.posd = item
         t3000_inst.pk = None
@@ -296,10 +314,10 @@ def pduploadFunc(file, formdict):
 
 
     if formdict['box_stckl']:
-        r = upStckliste(file, kbmeta_inst.pid)
+        r = pdupStueckliste(file, kbmeta_inst.pid)
 
     if formdict['box_calc']:
-        r = upPBBFunc(file, kbmeta_inst.pid)
+        r = pdupPBBFunc(file, kbmeta_inst.pid)
 
     # This doesnt work. R will be overwritten every time. Dictonaries have
     # to collect-append the messages.
@@ -307,93 +325,8 @@ def pduploadFunc(file, formdict):
     createDetailProjectGraphic(formdict['pid'])
     return r
 
-def uploadFunc(file, formdict):
-    '''
-    Data will be read into database in table T3000db. Iteration of all items of KBSUMME based on Posd
-    object-class-database. Important: Hours and Cost reference value in Posd must be right otherwise
-    wrong data will be inserted into database.
-    '''
 
-    kbmeta_inst = KbMeta()
-    posd_objects = Posd.objects
-    r = {'code':0, 'message':''}
-
-    try:
-        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-        ws = wb['KBSUMME']
-    except:
-        r['code'] = 1
-        r['message'] = 'Workbook could not be loaded or worksheet KBSUMME could not be read'
-        return r
-
-    '''
-    #Not understandable for me why I try to open the stueckliste here as well.
-        if formdict['box_stckl']:
-            try:
-                ws = wb['Stueckliste']
-            except:
-                r['code'] = 1
-                r['message'] = 'Workbook Stueckliste could not be loaded or worksheet could not be read'
-                return r
-    '''
-
-    #Fill in the META data to kbmeta database
-    #PID, quotno, dateupload, filename cant be empty NULL or not allwed to be emtpy:
-    kbmeta_inst.pid = formdict['pid'] #ws['G2'].value
-    kbmeta_inst.quotno = ws['G2'].value
-    kbmeta_inst.dateupload = timezone.datetime.now()
-    kbmeta_inst.filename = file
-    kbmeta_inst.phase = formdict['proptype']
-
-    #Values which can be empty. In this case value will output NULL, which is set to not allowed.
-    #For char we only accept emtpy string, otherwise double meaning with NULL and empty string will be the case.
-    if ws['S5'].value:
-        kbmeta_inst.klaversion = ws['S5'].value
-    if ws['S12'].value:
-        kbmeta_inst.calcbase = ws['S12'].value
-    if ws['S13'].value:
-        kbmeta_inst.contractbase = ws['S13'].value
-    if ws['G3'].value:
-        kbmeta_inst.projname = ws['G3'].value
-
-    #if ws['G4'].value:
-    kbmeta_inst.customer = formdict['customer'] #ws['G4'].value
-
-    if ws['G5'].value:
-        kbmeta_inst.endcustomer = ws['G5'].value
-    if ws['S4'].value:
-        kbmeta_inst.datecalc = ws['S4'].value
-
-    kbmeta_inst.pk = None
-    kbmeta_inst.kbsumme = True
-    kbmeta_inst.save()
-
-    # Fill in the hours and cost from excel KBSUMME.
-    for item in posd_objects.all():
-        if item.hours:
-            t3000_inst.hours = float(ws[item.hours].value)
-        if item.cost:
-            t3000_inst.cost = float(ws[item.cost].value)
-        t3000_inst.kbmeta = kbmeta_inst
-        t3000_inst.posd = item
-        t3000_inst.pk = None
-        t3000_inst.save()
-
-
-    if formdict['box_stckl']:
-        r = upStckliste(file, kbmeta_inst.pid)
-
-    if formdict['box_calc']:
-        r = upPBBFunc(file, kbmeta_inst.pid)
-
-    # This doesnt work. R will be overwritten every time. Dictonaries have
-    # to collect-append the messages.
-
-    createDetailProjectGraphic(formdict['pid'])
-    return r
-
-def upStueckliste(file, pid):
-
+def pdupStueckliste(file,pid):
     r = {'code':0, 'message':''}
     stueckliste_objects = Stueckliste.objects
     query_stueckliste = stueckliste_objects.filter(kbmeta__pid__iexact=pid)
@@ -405,11 +338,10 @@ def upStueckliste(file, pid):
         return r
 
     try:
-        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-        ws = wb['Stueckliste']
+        pd_stckl = pd.read_excel(BASE_DIR+file, sheet_name='Stueckliste')
     except:
         r['code'] = 1
-        r['message'] = 'Workbook could not be loaded or worksheet KBSUMME could not be read'
+        r['message'] = 'Stueckliste could not be loaded'
         return r
 
     kbmeta_inst = KbMeta()
@@ -417,76 +349,17 @@ def upStueckliste(file, pid):
     query_kb = kbmeta_objects.get(pid__iexact=str(pid))
     stueckl_inst = Stueckliste()
 
-    col_list = list(map(chr, range(65, 91)))
-    chk_module = 0
-    chk_sheet = 0
-    chk_ca = 0
-    chk_descr = 0
-    chk_mlfb = 0
-    chk_qty = 0
-    chk_cost = 0
-    chk_typ = 0
-    chk_tcost = 0
+    for rw in range(len(pd_stckl)):
+        stueckl_inst.module = pd_stckl['Module'].iloc[rw]
+        stueckl_inst.sheet = pd_stckl['Sheet'].iloc[rw]
+        stueckl_inst.caname = pd_stckl['CA-name'].iloc[rw]
+        stueckl_inst.description = pd_stckl['Description'].iloc[rw]
+        stueckl_inst.mlfb = pd_stckl['MLFB'].iloc[rw]
+        stueckl_inst.qty = pd_stckl['Quantity'].iloc[rw]
+        stueckl_inst.single_cost = pd_stckl['Single costs'].iloc[rw]
+        stueckl_inst.typical = pd_stckl['Typical'].iloc[rw]
+        stueckl_inst.total_cost = pd_stckl['Total costs'].iloc[rw]
 
-    chk = 0
-    rw=0
-
-    # Figur out where the col and row for each element starts
-    for row in range(5): # row
-        if chk != 0:
-            break
-        rw+=1
-        c = 0
-        for col in col_list: # column
-            if 'Module' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_module = c
-                chk = 1
-            if 'Sheet' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_sheet = c
-            if 'CA-name' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_ca = c
-            if 'Description' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_descr = c
-            if 'MLFB' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_mlfb = c
-            if 'Quantity' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_qty = c
-            if 'Single costs' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_cost = c
-            if 'Typical' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_typ = c
-            if 'Total costs' in str(ws['{}{}'.format(col, row+1)].value):
-                chk_tcost = c
-            c+=1
-
-    ''' # check on chk_module... == 0 doesnt work; c can be zero
-    if chk_module == 0 or chk_sheet == 0 or chk_ca == 0 or chk_descr == 0 or\
-    chk_mlfb == 0 or chk_qty == 0 or chk_cost == 0 or chk_typ == 0 or chk_tcost == 0:
-        r['code'] = 1
-        r['message'] = 'Could not find all column in the Stueckliste'
-        return r
-    '''
-
-    while rw < ws.max_row:
-        rw+=1 #rw is the row with the headline
-        if ws['{}{}'.format(col_list[chk_module],rw)].value:
-            stueckl_inst.module = ws['{}{}'.format(col_list[chk_module], rw)].value
-        if ws['{}{}'.format(col_list[chk_sheet], rw)].value:
-            stueckl_inst.sheet = ws['{}{}'.format(col_list[chk_sheet], rw)].value
-        if ws['{}{}'.format(col_list[chk_ca], rw)].value:
-            stueckl_inst.caname = ws['{}{}'.format(col_list[chk_ca], rw)].value
-        if ws['{}{}'.format(col_list[chk_descr], rw)].value:
-            stueckl_inst.description = ws['{}{}'.format(col_list[chk_descr], rw)].value
-        if ws['{}{}'.format(col_list[chk_mlfb], rw)].value:
-            stueckl_inst.mlfb = ws['{}{}'.format(col_list[chk_mlfb], rw)].value
-        if ws['{}{}'.format(col_list[chk_qty], rw)].value:
-            stueckl_inst.qty = ws['{}{}'.format(col_list[chk_qty], rw)].value
-        if ws['{}{}'.format(col_list[chk_cost], rw)].value:
-            stueckl_inst.single_cost = ws['{}{}'.format(col_list[chk_cost], rw)].value
-        if ws['{}{}'.format(col_list[chk_typ], rw)].value:
-            stueckl_inst.typical = ws['{}{}'.format(col_list[chk_typ], rw)].value
-        if ws['{}{}'.format(col_list[chk_tcost], rw)].value:
-            stueckl_inst.total_cost = ws['{}{}'.format(col_list[chk_tcost], rw)].value
 
         stueckl_inst.kbmeta = query_kb
         stueckl_inst.pk = None
@@ -495,10 +368,9 @@ def upStueckliste(file, pid):
 
     return r
 
-def projectStat(request, pid=205819):
-    t3000_obj = T3000db.objects
-    obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
 
+def projectStat(request, pid='205819'):
+    obj = get_object_or_404(kbmeta_objects, pid__iexact=str(pid))
     createDetailProjectGraphic(pid)
     return render(request, 'kbsumme/projectStat.html', {'obj':obj})
 
@@ -547,7 +419,7 @@ def upPBB(request):
     else:
         return render(request, 'kbsumme/upPBB.html', {'kbmetaobj':kbmeta_objects})
 
-def upPBBFunc(file, pid):
+def pdupPBBFunc(file, pid):
     '''
     Read in the calculation sheet. First right word is searched based on word
     'Business'. Linenumber is sotred in headline. Afterwards the 'Indidvidual Amount'
@@ -579,8 +451,7 @@ def upPBBFunc(file, pid):
 
 
     try:
-        wb = openpyxl.load_workbook(BASE_DIR + file, read_only=True, data_only=True)
-        ws = wb['Calculation']
+        pd_calc = pd.read_excel(BASE_DIR+file, sheet_name='Calculation', header=None, na_filter=False)
     except:
         r['code'] = 1
         r['message'] = 'Workbook or worksheet could not be loaded'
@@ -590,45 +461,41 @@ def upPBBFunc(file, pid):
     #line number in var headline
 
     pbb_inst = Pbb()
-    # Generate list with alphabet A-Z
-    col_list = list(map(chr, range(65, 90)))
-    #Find cell for offerno from A1 to Z23
+    #Find cell for offerno from (0,0) to (5,end)
     i = 0
     chk_offer = 0
     chk_fx = 0
-    for col in col_list:
-        i+=1
+    for col in range(len(pd_calc.columns)):
         #Goes through each column A to Z and do following:
-        for row in range(1,23):
+        for row in range(13):
             #Goes through each row
-            if ws['{}{}'.format(col, row)].value:
-                if 'Offer-Nr' in str(ws['{}{}'.format(col, row)].value):
-                    cell_offerno = col_list[i] + str(row)
-                    chk_offer += 1
-                if 'Basic rate' in str(ws['{}{}'.format(col, row)].value):
-                    cell_forex = col_list[i] + str(row)
-                    chk_fx += 1
-
-    check = chk_offer + chk_fx
+            if 'Offer-Nr' in str(pd_calc.iloc[row,col]):
+                cell_offerno = str(row) + ',' + str(col)
+                chk_offer += 1
+            if 'Basic rate' in str(pd_calc.iloc[row,col]):
+                cell_forex = str(row) + ',' + str(col)
+                chk_fx += 1
 
     # ================= CHECK both pbb and pbbmeta fields before saving to DB ========================
-
+    '''
     if chk_offer == 0:
         r['code'] = 1
         r['message'] = 'Offer-No cell could not be found'
         return r
+
 
     e_pid = ws['{}'.format(cell_offerno)].value
     if e_pid == pid:
         r['code'] = 1
         r['message'] = 'Offerno in Calculation and PID do not match'
         return r
+    '''
 
     row = 0
     i=0
-    while i < ws.max_row:
+    while i < len(pd_calc):
         i+=1
-        if 'Business' in str(ws['A{}'.format(i)].value):
+        if 'Business' in str(pd_calc.iloc[i,0]):
             row = i
             break
     #If row with 'Business' could not be found. Print message to user
@@ -640,24 +507,24 @@ def upPBBFunc(file, pid):
 
     #Search for the right column in the calculation sheet. Once found remember db_column
     #in var col_total.
-    col = ''
-    col_len = 0
-    while col_len < 27:
-        if 'Individual' in str(ws['{}{}'.format(col_list[col_len], row)].value):
-            col = col_list[col_len]
+    col = 0
+    count = 0
+    while count < 27:
+        if 'Individual' in str(pd_calc.iloc[row,count]):
+            col = count
             break
-        col_len += 1
+        count += 1
 
 
     # ========================================= END OF CHECK cells ===============================
 
     pbbmeta_inst = PbbMeta()
     pbbmeta_inst.offer_no = pid #ws['{}'.format(cell_offerno)].value
-    pbbmeta_inst.projname = ws['{}'.format('B3')].value #Optimze: Search for field projectname
-    pbbmeta_inst.customer = ws['{}'.format('B4')].value #Optimize: Search for field customer
+    pbbmeta_inst.projname = pd_calc.iloc[2,1] #Optimze: Search for field projectname
+    pbbmeta_inst.customer = pd_calc.iloc[3,1] #Optimize: Search for field customer
 
     if chk_fx == 1:
-        pbbmeta_inst.fx_rate = ws['{}'.format(cell_forex)].value
+        pbbmeta_inst.fx_rate = pd_calc.iloc[cell_forex]
 
     #TODO: Read in sheets without below value. Afterwards create html page to let somebody insert manually.
 
@@ -668,12 +535,12 @@ def upPBBFunc(file, pid):
     #pbbmeta_inst.endcustomer =
     #pbbmeta_inst.bidmanager =
 
-    pbbmeta_inst.total_surcharges = ws['{}{}'.format(col_list[col_len],(row+7))].value
-    pbbmeta_inst.total_includings = ws['{}{}'.format(col_list[col_len],(row+16))].value
-    pbbmeta_inst.total_sm = ws['{}{}'.format(col_list[col_len],(row+19))].value
-    pbbmeta_inst.total_cost = ws['{}{}'.format(col_list[col_len],(row+23))].value
-    pbbmeta_inst.total_price_euro = ws['{}{}'.format(col_list[col_len],(row+26))].value
-    pbbmeta_inst.total_price_fx = ws['{}{}'.format(col_list[col_len+1],(row+26))].value
+    pbbmeta_inst.total_surcharges = pd_calc.iloc[row+7, col]
+    pbbmeta_inst.total_includings = pd_calc.iloc[row+16, col]
+    pbbmeta_inst.total_sm = pd_calc.iloc[row+19, col]
+    pbbmeta_inst.total_cost = pd_calc.iloc[row+23, col]
+    pbbmeta_inst.total_price_euro = pd_calc.iloc[row+26, col]
+    pbbmeta_inst.total_price_fx = pd_calc.iloc[row+26, col+1]
 
     pbbmeta_inst.pk = None
     pbbmeta_inst.kbmeta = query_kb
@@ -684,39 +551,80 @@ def upPBBFunc(file, pid):
         #Steht im Feld Single kost etwas drin und steht im B#headline 'T3000
         #oder Hardware' dann lese die Werte aus Spalte B ein.
 
-    offset = [1,3,4,5,8,9,10,11,12,13,14,17,18,23,26,31]
+    offset = [1,3,4,5,9,10,11,12,13,14,17,18,23,26,31]
     i=0
-    while i < (col_len-2): #Loop all columns
+    while i < (col-2): #Loop all columns
         i+=1
-        if ws['{}{}'.format(col_list[i],(row+offset[13]))].value: #Check if field single cost contains some value
-
-            if ('T3000' in ws['{}{}'.format(col_list[i],row)].value) or ('Hardware' in ws['{}{}'.format(col_list[i],row)].value):
+        if pd_calc.iloc[row+offset[13], i]: #Check if field single cost contains some value
+            if ('T3000' in pd_calc.iloc[row, i]):
                 pbb_inst.kind_of_business = 'T3000 Hardware'
-            elif ('Engineering' in ws['{}{}'.format(col_list[i],row)].value):
+            elif ('Engineering' in pd_calc.iloc[row, i]):
                 pbb_inst.kind_of_business = 'SLI Engineering'
-            elif ('PM' in ws['{}{}'.format(col_list[i],row)].value) or ('CPM' in ws['{}{}'.format(col_list[i],row)].value):
+            elif ('PM' in pd_calc.iloc[row, i]) or ('CPM' in pd_calc.iloc[row, i]):
                 pbb_inst.kind_of_business = 'PM/CPM'
-            elif ('Furniture' in ws['{}{}'.format(col_list[i],row)].value):
+            elif ('Furniture' in pd_calc.iloc[row, i]):
                 pbb_inst.kind_of_business = 'Furniture, Printer, Monitor'
             else:
-                pbb_inst.kind_of_business = ws['{}{}'.format(col_list[i],row)].value
+                pbb_inst.kind_of_business = pd_calc.iloc[row, i]
 
-            pbb_inst.entity = ws['{}{}'.format(col_list[i],(row+offset[0]))].value
-            pbb_inst.escalation = ws['{}{}'.format(col_list[i],(row+offset[1]))].value
-            pbb_inst.transportation = ws['{}{}'.format(col_list[i],(row+offset[2]))].value
-            pbb_inst.custom = ws['{}{}'.format(col_list[i],(row+offset[3]))].value
-            pbb_inst.tax = ws['{}{}'.format(col_list[i],(row+offset[4]))].value
-            pbb_inst.fx_gain_loss = ws['{}{}'.format(col_list[i],(row+offset[5]))].value
-            pbb_inst.financing = ws['{}{}'.format(col_list[i],(row+offset[6]))].value
-            pbb_inst.insurance = ws['{}{}'.format(col_list[i],(row+offset[7]))].value
-            pbb_inst.bank_charges = ws['{}{}'.format(col_list[i],(row+offset[8]))].value
-            pbb_inst.technical_risk = ws['{}{}'.format(col_list[i],(row+offset[9]))].value
-            pbb_inst.warranty = ws['{}{}'.format(col_list[i],(row+offset[10]))].value
-            pbb_inst.sales_oh = ws['{}{}'.format(col_list[i],(row+offset[11]))].value
-            pbb_inst.net_margin = ws['{}{}'.format(col_list[i],(row+offset[12]))].value
-            pbb_inst.single_cost_euro = ws['{}{}'.format(col_list[i],(row+offset[13]))].value
-            pbb_inst.price = ws['{}{}'.format(col_list[i],(row+offset[14]))].value
-            pbb_inst.price_nego = ws['{}{}'.format(col_list[i],(row+offset[15]))].value
+            pbb_inst.entity = pd_calc.iloc[row+offset[0],i]
+
+            if pd_calc.iloc[row+offset[1],i]:
+                pbb_inst.escalation = pd_calc.iloc[row+offset[1],i]
+            else:
+                pbb_inst.escalation = None
+            if pd_calc.iloc[row+offset[2],i]:
+                pbb_inst.transportation = pd_calc.iloc[row+offset[2],i]
+            else:
+                pbb_inst.transportation = None
+            if pd_calc.iloc[row+offset[3],i]:
+                pbb_inst.custom_tax = pd_calc.iloc[row+offset[3],i]
+            else:
+                pbb_inst.custom_tax = None
+            if pd_calc.iloc[row+offset[4],i]:
+                pbb_inst.fx_gain_loss = pd_calc.iloc[row+offset[4],i]
+            else:
+                pbb_inst.fx_gain_loss = None
+            if pd_calc.iloc[row+offset[5],i]:
+                pbb_inst.financing = pd_calc.iloc[row+offset[5],i]
+            else:
+                pbb_inst.financing = None
+            if pd_calc.iloc[row+offset[6],i]:
+                pbb_inst.insurance = pd_calc.iloc[row+offset[6],i]
+            else:
+                pbb_inst.insurance = None
+            if pd_calc.iloc[row+offset[7],i]:
+                pbb_inst.bank_charges = pd_calc.iloc[row+offset[7],i]
+            else:
+                pbb_inst.bank_charges = None
+            if pd_calc.iloc[row+offset[8],i]:
+                pbb_inst.technical_risk = pd_calc.iloc[row+offset[8],i]
+            else:
+                pbb_inst.technical_risk = None
+            if pd_calc.iloc[row+offset[9],i]:
+                pbb_inst.warranty = pd_calc.iloc[row+offset[9],i]
+            else:
+                pbb_inst.warranty = None
+            if pd_calc.iloc[row+offset[10],i]:
+                pbb_inst.sales_oh = pd_calc.iloc[row+offset[10],i]
+            else:
+                pbb_inst.sales_oh = None
+            if pd_calc.iloc[row+offset[11],i]:
+                pbb_inst.net_margin = pd_calc.iloc[row+offset[11],i]
+            else:
+                pbb_inst.net_margin = None
+            if pd_calc.iloc[row+offset[12],i]:
+                pbb_inst.single_cost_euro = pd_calc.iloc[row+offset[12],i]
+            else:
+                pbb_inst.single_cost_euro = None
+            if pd_calc.iloc[row+offset[13],i]:
+                pbb_inst.price = pd_calc.iloc[row+offset[13],i]
+            else:
+                pbb_inst.price = None
+            if pd_calc.iloc[row+offset[14],i]:
+                pbb_inst.price_nego = pd_calc.iloc[row+offset[14],i]
+            else:
+                pbb_inst.price_nego = None
 
 
             pbb_inst.pbbmeta = pbbmeta_inst

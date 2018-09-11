@@ -3,9 +3,9 @@ from django.db import models
 class Posd(models.Model):
     #This class is just repsresenting the cost position in KBSUMME
     hgpos = models.IntegerField(unique=True)
-    description = models.CharField(max_length=200)
-    hours = models.CharField(max_length=5)
-    cost = models.CharField(max_length=5)
+    description = models.CharField(max_length=200, blank=True)
+    hours = models.CharField(max_length=5, blank=True)
+    cost = models.CharField(max_length=5, blank=True)
     pd_hours = models.IntegerField(null=True)
     pd_cost = models.IntegerField(null=True)
 
