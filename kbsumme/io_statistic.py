@@ -38,7 +38,7 @@ def iograph():
         lio_count.append(total_IO(lpid[i]))
 
     for i in range(0, len(lpid)):
-        sum_Dict = sum_calculation(lpid[i], t3000db_objects)
+        sum_Dict = sum_calculation(lpid[i])
         ldcs_cost.append(sum(sum_Dict.values()))
 
     for i in range(0, len(lpid)):
