@@ -1,8 +1,8 @@
 from .models import KbMeta, T3000db
 
 import matplotlib.pyplot as plt
-import pygal
 from pygal.style import BlueStyle
+import pygal
 import pandas as pd
 import numpy as np
 
@@ -246,3 +246,6 @@ def projectName(pid):
     query_title = kbmeta_objects.filter(pid__iexact=str(pid))
     get_title = query_title.get()
     return get_title.projname
+
+def projectNameSummary(pid):
+    return projectName(pid)[:14]

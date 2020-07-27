@@ -1,8 +1,10 @@
 from .models import Stueckliste, KbMeta, T3000db
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pygal
 import numpy as np
 from .project_graph import sum_calculation
+
 
 def iograph():
     '''

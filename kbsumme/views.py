@@ -304,8 +304,9 @@ def pduploadFunc(file, formdict):
 
     for item in posd_objects.all():
         if item.hours:
-            t3000_inst.hours = float(pd_kbsumme.iloc[item.pd_hours,10])
+            print('There is something in this field..')
         if item.cost:
+            t3000_inst.hours = float(pd_kbsumme.iloc[item.pd_hours,10])
             t3000_inst.cost = float(pd_kbsumme.iloc[item.pd_cost,12])
         t3000_inst.kbmeta = kbmeta_inst
         t3000_inst.posd = item
@@ -553,17 +554,27 @@ def pdupPBBFunc(file, pid):
 
     offset = [1,3,4,5,9,10,11,12,13,14,17,18,23,26,31]
     i=0
+
+    t3000chk = 0
+    engchk = 0
+    pmchk = 0
+    furchk = 0
+
     while i < (col-2): #Loop all columns
         i+=1
         if pd_calc.iloc[row+offset[13], i]: #Check if field single cost contains some value
-            if ('T3000' in pd_calc.iloc[row, i]):
+            if ('T3000' in pd_calc.iloc[row, i]) and (t3000chk == 0):
                 pbb_inst.kind_of_business = 'T3000 Hardware'
-            elif ('Engineering' in pd_calc.iloc[row, i]):
+                t3000chk = 1
+            elif ('Engineering' in pd_calc.iloc[row, i]) and (engchk == 0):
                 pbb_inst.kind_of_business = 'SLI Engineering'
-            elif ('PM' in pd_calc.iloc[row, i]) or ('CPM' in pd_calc.iloc[row, i]):
+                engchk = 1
+            elif ('PM' in pd_calc.iloc[row, i]) and ('CPM' in pd_calc.iloc[row, i]) and (pmchk == 0):
                 pbb_inst.kind_of_business = 'PM/CPM'
-            elif ('Furniture' in pd_calc.iloc[row, i]):
+                pmchk = 1
+            elif ('Furniture' in pd_calc.iloc[row, i]) and (furchk == 0):
                 pbb_inst.kind_of_business = 'Furniture, Printer, Monitor'
+                furchk = 1
             else:
                 pbb_inst.kind_of_business = pd_calc.iloc[row, i]
 

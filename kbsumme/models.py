@@ -78,7 +78,7 @@ class PbbMeta(models.Model):
 class Pbb(models.Model):
     #PBB tatle cost, price information
     pbbmeta = models.ForeignKey(PbbMeta, to_field="offer_no", db_column="pbbmeta", on_delete=models.CASCADE)
-    kind_of_business = models.CharField(max_length=150)
+    kind_of_business = models.CharField(max_length=150, unique=True)
     entity = models.CharField(max_length=20, null=True)
     escalation = models.FloatField(null=True)
     transportation = models.FloatField(null=True)
